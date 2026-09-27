@@ -369,7 +369,7 @@ export default function Home() {
     updateState(prev => ({
       ...prev,
       batches: [pendingBatch, ...prev.batches.filter(b => b.id !== pendingBatch.id)],
-      cards: [...newCards, ...prev.cards],
+      cards: [...newCards, ...prev.cards.filter(c => c.batchId !== pendingBatch.id)],
       syncStatus: {
         ...prev.syncStatus,
         pendingSyncCount: prev.syncStatus.pendingSyncCount + newCards.length

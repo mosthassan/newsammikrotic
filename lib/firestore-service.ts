@@ -556,6 +556,7 @@ export async function saveBatchAndCards(
       };
     });
 
+    const exactCount = cards.length;
     const batchDocPayload = {
       ...sanitizeForFirestore({
         ...cardBatch,
@@ -563,6 +564,9 @@ export async function saveBatchAndCards(
         batchId: batchId,
         tenantId: tenantId || cardBatch.tenantId || 'tenant_samtech_01',
         routerToken: activeToken,
+        quantity: exactCount,
+        totalCards: exactCount,
+        inStockCount: exactCount,
         status: 'pending',
         synced: false,
         cards: formattedCards,

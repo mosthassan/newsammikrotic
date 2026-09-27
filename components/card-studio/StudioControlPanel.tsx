@@ -1446,25 +1446,26 @@ export const StudioControlPanel: React.FC<StudioControlPanelProps> = ({
             </div>
 
             {/* Quick Shape Presets */}
-            <div className="grid grid-cols-4 gap-1.5">
+            <div className="grid grid-cols-5 gap-1.5">
               {[
-                { label: 'مربع حاد', radius: 0, desc: '0px' },
+                { label: 'مشطوف 2026', radius: 10, desc: 'Cyber تقني' },
+                { label: 'عصري AI', radius: 16, desc: '16px ناعم' },
                 { label: 'كلاسيكي', radius: 8, desc: '8px' },
-                { label: 'عصري دائري', radius: 14, desc: '14px' },
-                { label: 'كبسولة ناعمة', radius: 24, desc: '24px' }
+                { label: 'مربع حاد', radius: 0, desc: '0px مستقيم' },
+                { label: 'كبسولة', radius: 26, desc: '26px دائري' }
               ].map((s) => (
                 <button
                   key={s.radius}
                   type="button"
                   onClick={() => applyShapePreset(s.radius)}
-                  className={`py-1.5 px-2 rounded-lg border text-center transition flex flex-col items-center ${
+                  className={`py-1.5 px-1.5 rounded-lg border text-center transition flex flex-col items-center ${
                     (currentTemplate.borderRadius ?? 14) === s.radius
                       ? 'bg-sky-600/30 border-sky-500 text-sky-200 font-bold ring-1 ring-sky-500/40'
                       : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700'
                   }`}
                 >
-                  <span className="text-[11px] font-bold">{s.label}</span>
-                  <span className="text-[9px] text-slate-500">{s.desc}</span>
+                  <span className="text-[10.5px] font-bold">{s.label}</span>
+                  <span className="text-[8.5px] text-slate-500">{s.desc}</span>
                 </button>
               ))}
             </div>
@@ -2559,8 +2560,12 @@ export const StudioControlPanel: React.FC<StudioControlPanelProps> = ({
                 </span>
               </div>
 
-              <div className="grid grid-cols-3 gap-1.5">
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5">
                 {[
+                  { id: 'ai_neon_pill', label: '⚡ كبسولة نيون AI' },
+                  { id: 'cyber_bracket', label: '🤖 أقواس سيبرانية 2026' },
+                  { id: 'quantum_hud', label: '🌐 مؤشرات كمومية HUD' },
+                  { id: 'glass_morphism', label: '💎 زجاج هولوجرامي' },
                   { id: 'modern_box', label: 'مستطيل ناعم' },
                   { id: 'pill_badge', label: 'كبسولة دائرية' },
                   { id: 'ticket_dashed', label: 'تذكرة منقطة' },
@@ -2572,9 +2577,9 @@ export const StudioControlPanel: React.FC<StudioControlPanelProps> = ({
                     key={s.id}
                     type="button"
                     onClick={() => handleUpdateTemplate({ codeBoxStyle: s.id as any })}
-                    className={`px-2 py-2 rounded-lg border text-center text-[11px] font-medium transition ${
+                    className={`px-2 py-2 rounded-lg border text-center text-[10.5px] font-medium transition ${
                       (currentTemplate.codeBoxStyle || 'modern_box') === s.id
-                        ? 'bg-sky-600/30 border-sky-500 text-sky-200 font-bold ring-1 ring-sky-500/40'
+                        ? 'bg-sky-600/30 border-sky-500 text-sky-200 font-bold ring-1 ring-sky-500/40 shadow-sm'
                         : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700'
                     }`}
                   >
@@ -2627,6 +2632,105 @@ export const StudioControlPanel: React.FC<StudioControlPanelProps> = ({
                     <span className="text-[10px] font-mono text-slate-300 truncate">
                       {currentTemplate.codeBoxTextColor || 'تلقائي'}
                     </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* 2026 Ultra-Bold & Wide Print Numbers Configuration */}
+              <div className="pt-3 border-t border-slate-800/80 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-cyan-300 flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+                      <span>وضوح وسماكة أرقام الكود عند الطباعة (Ultra-Bold & Wide Print)</span>
+                    </span>
+                  </div>
+                  <span className="text-[10px] bg-cyan-950 border border-cyan-800 text-cyan-300 px-2 py-0.5 rounded-full font-bold">
+                    معايير 2026
+                  </span>
+                </div>
+
+                {/* Print Font Selection */}
+                <div>
+                  <label className="block text-[10.5px] text-slate-300 mb-1.5 font-medium">نوع وسماكة خط الأرقام (Font Family):</label>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+                    {[
+                      { id: "'Arial Black', 'Segoe UI Black', sans-serif", label: 'Arial Black (الأعرض والأوضح للطباعة)' },
+                      { id: "'Impact', sans-serif", label: 'Impact (أرقام ضخمة ممتلئة)' },
+                      { id: "'Segoe UI Black', 'Trebuchet MS', sans-serif", label: 'Segoe Black (تقني عصري 2026)' },
+                      { id: "'Consolas', monospace", label: 'Consolas (أرقام برمجية دقيقة)' }
+                    ].map(f => (
+                      <button
+                        key={f.id}
+                        type="button"
+                        onClick={() => handleUpdateTemplate({ codeFontFamily: f.id, isWideCodeForPrint: true })}
+                        className={`p-2 rounded-lg border text-center transition flex flex-col items-center justify-center ${
+                          (currentTemplate.codeFontFamily || "'Arial Black', 'Segoe UI Black', sans-serif") === f.id
+                            ? 'bg-cyan-600/30 border-cyan-500 text-cyan-200 font-bold ring-1 ring-cyan-500/40'
+                            : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700'
+                        }`}
+                      >
+                        <span className="text-[10.5px] font-bold">{f.label.split(' (')[0]}</span>
+                        <span className="text-[8.5px] text-slate-400">({f.label.split(' (')[1]}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Print Code Size Buttons */}
+                <div className="grid grid-cols-4 gap-1.5">
+                  {[
+                    { label: 'قياسي (14px)', size: 14 },
+                    { label: 'عريض للطباعة (16px)', size: 16 },
+                    { label: 'ضخم وبارز (18px)', size: 18 },
+                    { label: 'عملاق فائق الوضوح (21px)', size: 21 }
+                  ].map(sz => (
+                    <button
+                      key={sz.size}
+                      type="button"
+                      onClick={() => handleUpdateTemplate({ fontSizeCode: sz.size, isWideCodeForPrint: true })}
+                      className={`py-1.5 px-2 rounded-lg border text-center transition ${
+                        (currentTemplate.fontSizeCode || 16) === sz.size
+                          ? 'bg-emerald-600/30 border-emerald-500 text-emerald-200 font-bold ring-1 ring-emerald-500/40'
+                          : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700'
+                      }`}
+                    >
+                      <span className="text-[10.5px] font-bold">{sz.label}</span>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Letter Spacing & Wide Print Checkbox */}
+                <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-900">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="wideCodePrintCheck"
+                      checked={currentTemplate.isWideCodeForPrint !== false}
+                      onChange={e => handleUpdateTemplate({ isWideCodeForPrint: e.target.checked })}
+                      className="w-4 h-4 rounded text-cyan-600 bg-slate-900 border-slate-700 focus:ring-cyan-500"
+                    />
+                    <label htmlFor="wideCodePrintCheck" className="text-xs text-slate-200 font-medium cursor-pointer">
+                      تفعيل التكبير والتعريض التلقائي للأرقام للطباعة (مظهر عريض وواضح)
+                    </label>
+                  </div>
+
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10.5px] text-slate-400">تباعد الأرقام:</span>
+                    {(['normal', 'wide', 'widest'] as const).map(sp => (
+                      <button
+                        key={sp}
+                        type="button"
+                        onClick={() => handleUpdateTemplate({ codeLetterSpacing: sp })}
+                        className={`px-2 py-0.5 rounded text-[10px] font-bold border transition ${
+                          (currentTemplate.codeLetterSpacing || 'wide') === sp
+                            ? 'bg-cyan-600 text-white border-cyan-500'
+                            : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-slate-200'
+                        }`}
+                      >
+                        {sp === 'normal' ? 'عادي' : sp === 'wide' ? 'عريض' : 'فائق التباعد 2026'}
+                      </button>
+                    ))}
                   </div>
                 </div>
               </div>

@@ -312,10 +312,545 @@ export const SVG_SUNSET_CORAL = `<svg xmlns="http://www.w3.org/2000/svg" viewBox
   <line x1="30" y1="85" x2="820" y2="85" stroke="#fb7185" stroke-width="1.2" stroke-opacity="0.4" />
 </svg>`;
 
+// 13. نمط الذكاء الاصطناعي العصبي الكمومي (Neural Quantum AI 2026)
+export const SVG_NEURAL_AI_2026 = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 850 500" width="100%" height="100%">
+  <defs>
+    <linearGradient id="neural-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#030712" />
+      <stop offset="45%" stop-color="#091329" />
+      <stop offset="80%" stop-color="#0d0824" />
+      <stop offset="100%" stop-color="#02040a" />
+    </linearGradient>
+    <linearGradient id="laser-cyan-purple" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#06b6d4" />
+      <stop offset="50%" stop-color="#6366f1" />
+      <stop offset="100%" stop-color="#a855f7" />
+    </linearGradient>
+    <linearGradient id="ai-glow-pulse" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00f5ff" stop-opacity="0.4" />
+      <stop offset="100%" stop-color="#ec4899" stop-opacity="0.1" />
+    </linearGradient>
+    <pattern id="neural-matrix-grid" width="28" height="28" patternUnits="userSpaceOnUse">
+      <path d="M 28 0 L 0 0 0 28" fill="none" stroke="#38bdf8" stroke-width="0.6" stroke-opacity="0.08" />
+      <circle cx="28" cy="28" r="0.8" fill="#38bdf8" fill-opacity="0.25" />
+    </pattern>
+    <filter id="ai-glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <rect width="850" height="500" rx="28" fill="url(#neural-bg)" />
+  <rect width="850" height="500" rx="28" fill="url(#neural-matrix-grid)" />
+  
+  <!-- AI Neural Network Synapses -->
+  <g stroke="url(#laser-cyan-purple)" stroke-width="1.2" stroke-opacity="0.35" fill="none">
+    <path d="M 40 180 L 160 140 L 280 210 L 420 160 L 590 220 L 740 150 L 810 200" />
+    <path d="M 80 340 L 210 280 L 330 350 L 510 290 L 670 360 L 790 310" />
+    <path d="M 160 140 L 210 280 M 280 210 L 330 350 M 420 160 L 510 290 M 590 220 L 670 360" stroke-dasharray="4 6" stroke-opacity="0.2" />
+  </g>
+
+  <!-- Glowing Synaptic Nodes -->
+  <g fill="#00f5ff" filter="url(#ai-glow)">
+    <circle cx="160" cy="140" r="3.5" fill="#38bdf8" />
+    <circle cx="280" cy="210" r="4.5" fill="#00f5ff" />
+    <circle cx="420" cy="160" r="5" fill="#818cf8" />
+    <circle cx="590" cy="220" r="4.5" fill="#c084fc" />
+    <circle cx="740" cy="150" r="3.5" fill="#f472b6" />
+    <circle cx="210" cy="280" r="4" fill="#38bdf8" />
+    <circle cx="330" cy="350" r="3.5" fill="#818cf8" />
+    <circle cx="510" cy="290" r="4.5" fill="#c084fc" />
+    <circle cx="670" cy="360" r="3.5" fill="#ec4899" />
+  </g>
+
+  <!-- Cyber Laser Frame & Corner Brackets -->
+  <rect x="10" y="10" width="830" height="480" rx="20" fill="none" stroke="url(#laser-cyan-purple)" stroke-width="1.8" stroke-opacity="0.8" />
+  <path d="M 10 45 L 45 10 M 840 45 L 805 10 M 10 455 L 45 490 M 840 455 L 805 490" stroke="#00f5ff" stroke-width="3" stroke-linecap="round" />
+  
+  <!-- AI Chip HUD Telemetry Line -->
+  <line x1="30" y1="82" x2="820" y2="82" stroke="url(#laser-cyan-purple)" stroke-width="1.2" stroke-opacity="0.45" />
+  <rect x="730" y="77" width="85" height="10" rx="5" fill="#6366f1" fill-opacity="0.25" stroke="#818cf8" stroke-width="0.8" />
+</svg>`;
+
+// 14. نمط الهولوجرام السيبراني ثلاثي الأبعاد (Cyber Holographic Prism 2026)
+export const SVG_HOLO_PRISM_2026 = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 850 500" width="100%" height="100%">
+  <defs>
+    <linearGradient id="holo-base" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#05030e" />
+      <stop offset="35%" stop-color="#0d0824" />
+      <stop offset="70%" stop-color="#08142c" />
+      <stop offset="100%" stop-color="#020b17" />
+    </linearGradient>
+    <linearGradient id="holo-spectrum" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff007f" stop-opacity="0.35" />
+      <stop offset="25%" stop-color="#7928ca" stop-opacity="0.3" />
+      <stop offset="50%" stop-color="#0070f3" stop-opacity="0.35" />
+      <stop offset="75%" stop-color="#00dfd8" stop-opacity="0.3" />
+      <stop offset="100%" stop-color="#79ffe1" stop-opacity="0.35" />
+    </linearGradient>
+    <linearGradient id="prism-beam" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00f5ff" stop-opacity="0.0" />
+      <stop offset="50%" stop-color="#f43f5e" stop-opacity="0.22" />
+      <stop offset="100%" stop-color="#a855f7" stop-opacity="0.0" />
+    </linearGradient>
+  </defs>
+
+  <rect width="850" height="500" rx="28" fill="url(#holo-base)" />
+  
+  <!-- Prismatic Refraction Rays -->
+  <polygon points="120,0 260,0 480,500 340,500" fill="url(#holo-spectrum)" />
+  <polygon points="450,0 560,0 720,500 610,500" fill="url(#prism-beam)" />
+  <polygon points="0,150 850,220 850,300 0,230" fill="url(#holo-spectrum)" opacity="0.4" />
+  
+  <!-- Iridescent Hexagonal Cyber Lattice -->
+  <g stroke="#38bdf8" stroke-width="0.8" stroke-opacity="0.18" fill="none">
+    <polygon points="760,110 785,95 810,110 810,140 785,155 760,140" />
+    <polygon points="785,155 810,140 835,155 835,185 810,200 785,185" />
+    <polygon points="735,155 760,140 785,155 785,185 760,200 735,185" />
+  </g>
+
+  <!-- Holographic Border Frame -->
+  <rect x="10" y="10" width="830" height="480" rx="20" fill="none" stroke="url(#holo-spectrum)" stroke-width="2.2" />
+  <rect x="16" y="16" width="818" height="468" rx="16" fill="none" stroke="#00f5ff" stroke-width="0.8" stroke-opacity="0.4" stroke-dasharray="8 6" />
+
+  <!-- Technical HUD Accent -->
+  <line x1="30" y1="84" x2="820" y2="84" stroke="#38bdf8" stroke-width="1.2" stroke-opacity="0.5" />
+  <circle cx="45" cy="84" r="3.5" fill="#ff007f" />
+  <circle cx="805" cy="84" r="3.5" fill="#00dfd8" />
+</svg>`;
+
+// 15. نمط المعالج الكمومي النيوني الفائق (Quantum Neon Core 2026)
+export const SVG_QUANTUM_CORE_2026 = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 850 500" width="100%" height="100%">
+  <defs>
+    <linearGradient id="quantum-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#020817" />
+      <stop offset="50%" stop-color="#041f1e" />
+      <stop offset="100%" stop-color="#010e14" />
+    </linearGradient>
+    <linearGradient id="quantum-rail" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#10b981" />
+      <stop offset="50%" stop-color="#06b6d4" />
+      <stop offset="100%" stop-color="#3b82f6" />
+    </linearGradient>
+    <pattern id="quantum-pcb" width="36" height="36" patternUnits="userSpaceOnUse">
+      <path d="M 0 18 L 14 18 L 18 14 L 36 14" fill="none" stroke="#10b981" stroke-width="0.75" stroke-opacity="0.12" />
+      <circle cx="18" cy="14" r="1.5" fill="#06b6d4" fill-opacity="0.3" />
+    </pattern>
+  </defs>
+
+  <rect width="850" height="500" rx="28" fill="url(#quantum-bg)" />
+  <rect width="850" height="500" rx="28" fill="url(#quantum-pcb)" />
+  
+  <!-- Central Quantum Wave Conduit -->
+  <path d="M 0 320 C 220 220 400 390 850 240 L 850 500 L 0 500 Z" fill="#064e3b" fill-opacity="0.35" />
+  <path d="M 0 390 C 280 300 520 440 850 340 L 850 500 L 0 500 Z" fill="#022c22" fill-opacity="0.6" />
+
+  <!-- Quantum Processor Border -->
+  <rect x="10" y="10" width="830" height="480" rx="20" fill="none" stroke="url(#quantum-rail)" stroke-width="2" stroke-opacity="0.85" />
+  
+  <!-- Chamfer Cut Corner Emblems -->
+  <polygon points="10,40 40,10 10,10" fill="#10b981" fill-opacity="0.5" />
+  <polygon points="840,40 810,10 840,10" fill="#06b6d4" fill-opacity="0.5" />
+  <polygon points="10,460 40,490 10,490" fill="#06b6d4" fill-opacity="0.5" />
+  <polygon points="840,460 810,490 840,490" fill="#10b981" fill-opacity="0.5" />
+
+  <line x1="30" y1="84" x2="820" y2="84" stroke="url(#quantum-rail)" stroke-width="1.5" stroke-opacity="0.5" />
+  <circle cx="45" cy="84" r="3.5" fill="#10b981" />
+  <circle cx="805" cy="84" r="3.5" fill="#06b6d4" />
+</svg>`;
+
+// 16. نمط الشفق السيبراني التوليدي (Aurora Cyber AI 2026)
+export const SVG_AURORA_CYBER_2026 = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 850 500" width="100%" height="100%">
+  <defs>
+    <linearGradient id="aurora-sky" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#020617" />
+      <stop offset="50%" stop-color="#090d21" />
+      <stop offset="100%" stop-color="#030712" />
+    </linearGradient>
+    <radialGradient id="aurora-green" cx="30%" cy="20%" r="70%">
+      <stop offset="0%" stop-color="#10b981" stop-opacity="0.32" />
+      <stop offset="50%" stop-color="#06b6d4" stop-opacity="0.15" />
+      <stop offset="100%" stop-color="#020617" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="aurora-purple" cx="80%" cy="40%" r="65%">
+      <stop offset="0%" stop-color="#a855f7" stop-opacity="0.3" />
+      <stop offset="50%" stop-color="#ec4899" stop-opacity="0.12" />
+      <stop offset="100%" stop-color="#020617" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+
+  <rect width="850" height="500" rx="28" fill="url(#aurora-sky)" />
+  <rect width="850" height="500" rx="28" fill="url(#aurora-green)" />
+  <rect width="850" height="500" rx="28" fill="url(#aurora-purple)" />
+
+  <!-- Aurora Ribbon Curves -->
+  <path d="M 0 160 Q 220 80 440 180 T 850 120 L 850 260 Q 600 200 400 300 T 0 240 Z" fill="#10b981" fill-opacity="0.12" />
+  <path d="M 0 220 Q 300 140 550 240 T 850 180 L 850 320 Q 550 280 300 360 T 0 300 Z" fill="#8b5cf6" fill-opacity="0.14" />
+
+  <rect x="10" y="10" width="830" height="480" rx="20" fill="none" stroke="#34d399" stroke-width="1.8" stroke-opacity="0.75" />
+  <line x1="30" y1="84" x2="820" y2="84" stroke="#34d399" stroke-width="1.2" stroke-opacity="0.4" />
+</svg>`;
+
+// 17. نمط التيتانيوم الفضائي الذكي (Aerospace Titanium 2026)
+export const SVG_TITANIUM_STEALTH_2026 = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 850 500" width="100%" height="100%">
+  <defs>
+    <linearGradient id="titanium-base" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f1117" />
+      <stop offset="40%" stop-color="#181c26" />
+      <stop offset="70%" stop-color="#12151e" />
+      <stop offset="100%" stop-color="#0a0c12" />
+    </linearGradient>
+    <linearGradient id="titanium-edge" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#64748b" />
+      <stop offset="50%" stop-color="#94a3b8" />
+      <stop offset="100%" stop-color="#38bdf8" />
+    </linearGradient>
+    <pattern id="brushed-metal" width="60" height="4" patternUnits="userSpaceOnUse">
+      <line x1="0" y1="1" x2="60" y2="1" stroke="#ffffff" stroke-width="0.5" stroke-opacity="0.04" />
+      <line x1="0" y1="3" x2="60" y2="3" stroke="#000000" stroke-width="0.5" stroke-opacity="0.25" />
+    </pattern>
+  </defs>
+
+  <rect width="850" height="500" rx="28" fill="url(#titanium-base)" />
+  <rect width="850" height="500" rx="28" fill="url(#brushed-metal)" />
+
+  <!-- Aerospace Chamfer Cuts -->
+  <polygon points="12,45 45,12 805,12 838,45 838,455 805,488 45,488 12,455" fill="none" stroke="url(#titanium-edge)" stroke-width="2" />
+  <line x1="30" y1="84" x2="820" y2="84" stroke="#64748b" stroke-width="1.2" stroke-opacity="0.6" />
+  
+  <rect x="760" y="78" width="55" height="12" rx="3" fill="#1e293b" stroke="#38bdf8" stroke-width="1" />
+  <circle cx="770" cy="84" r="2.5" fill="#38bdf8" />
+  <circle cx="780" cy="84" r="2.5" fill="#10b981" />
+</svg>`;
+
+// 18. نمط التقنية البيضاء النقية فائقة التباين (Minimal Quantum White 2026)
+export const SVG_MINIMAL_TECH_2026 = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 850 500" width="100%" height="100%">
+  <defs>
+    <pattern id="tech-dot-matrix" width="20" height="20" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.2" fill="#0284c7" fill-opacity="0.15" />
+    </pattern>
+    <linearGradient id="tech-blue-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0284c7" />
+      <stop offset="100%" stop-color="#0369a1" />
+    </linearGradient>
+  </defs>
+
+  <rect width="850" height="500" rx="28" fill="#ffffff" />
+  <rect width="850" height="500" rx="28" fill="url(#tech-dot-matrix)" />
+
+  <!-- Crisp 100% Contrast Print Borders -->
+  <rect x="10" y="10" width="830" height="480" rx="20" fill="none" stroke="#0f172a" stroke-width="2.2" />
+  <rect x="16" y="16" width="818" height="468" rx="16" fill="none" stroke="#0284c7" stroke-width="1" stroke-dasharray="6 4" stroke-opacity="0.7" />
+
+  <!-- High-Precision Crosshairs -->
+  <g stroke="#0284c7" stroke-width="1.2" stroke-linecap="round">
+    <line x1="24" y1="24" x2="38" y2="24" />
+    <line x1="24" y1="24" x2="24" y2="38" />
+    <line x1="826" y1="24" x2="812" y2="24" />
+    <line x1="826" y1="24" x2="826" y2="38" />
+  </g>
+
+  <line x1="30" y1="84" x2="820" y2="84" stroke="#0f172a" stroke-width="1.5" />
+</svg>`;
+
 // ==========================================
-// 12 PREBUILT TEMPLATES LIBRARY
+// PREBUILT TEMPLATES LIBRARY (ENHANCED 2026 AI & FUTURISTIC)
 // ==========================================
 export const PREBUILT_TEMPLATES_LIBRARY: CardTemplate[] = [
+  {
+    id: 'tpl_neural_ai_2026_svg',
+    name: '🧠 الذكاء الاصطناعي العصبي 2026 (Neural Quantum AI)',
+    bgType: 'image',
+    bgColor: '#030712',
+    bgGradientStart: '#030712',
+    bgGradientEnd: '#091329',
+    bgImage: svgToDataUri(SVG_NEURAL_AI_2026),
+    svgCode: SVG_NEURAL_AI_2026,
+    textColor: '#fdf4ff',
+    accentColor: '#00f5ff',
+    badgeBg: '#6366f1',
+    badgeTextColor: '#ffffff',
+    codeBoxStyle: 'ai_neon_pill',
+    codeBoxBg: '#090d21',
+    codeBoxBorderColor: '#00f5ff',
+    codeBoxTextColor: '#ffffff',
+    codeFontWeight: 'black',
+    codeLetterSpacing: 'widest',
+    isWideCodeForPrint: true,
+    showQr: true,
+    showCode: true,
+    showPin: true,
+    showPrice: true,
+    showProfileName: true,
+    showUptime: true,
+    showByteLimit: true,
+    showNetworkName: true,
+    showCutLines: true,
+    showScratchGuide: false,
+    showCreatedAt: true,
+    createdAtFormat: 'date_only',
+    gridGapXMm: 1.5,
+    gridGapYMm: 1.5,
+    marginX: 8,
+    marginY: 8,
+    qrSizeMm: 18,
+    cardsPerRow: 3,
+    cardsPerCol: 8,
+    cardWidthMm: 63,
+    cardHeightMm: 33,
+    fontSizeTitle: 11,
+    fontSizeCode: 17,
+    fontSizePrice: 12,
+    fontSizeMeta: 9,
+    customHeader: 'شبكة الذكاء الاصطناعي العصبية فائقة السرعة',
+    customFooter: 'اتصال فائق الذكاء ومستقر بأحدث تقنيات 2026',
+    themeStyle: 'neural_ai_2026'
+  },
+  {
+    id: 'tpl_holo_prism_2026_svg',
+    name: '🔮 الهولوجرام السيبراني ثلاثي الأبعاد (Holographic Prism 2026)',
+    bgType: 'image',
+    bgColor: '#05030e',
+    bgGradientStart: '#05030e',
+    bgGradientEnd: '#08142c',
+    bgImage: svgToDataUri(SVG_HOLO_PRISM_2026),
+    svgCode: SVG_HOLO_PRISM_2026,
+    textColor: '#ffffff',
+    accentColor: '#00dfd8',
+    badgeBg: '#ff007f',
+    badgeTextColor: '#ffffff',
+    codeBoxStyle: 'cyber_bracket',
+    codeBoxBg: '#080517',
+    codeBoxBorderColor: '#00dfd8',
+    codeBoxTextColor: '#ffffff',
+    codeFontWeight: 'black',
+    codeLetterSpacing: 'widest',
+    isWideCodeForPrint: true,
+    showQr: true,
+    showCode: true,
+    showPin: true,
+    showPrice: true,
+    showProfileName: true,
+    showUptime: true,
+    showByteLimit: true,
+    showNetworkName: true,
+    showCutLines: true,
+    showScratchGuide: false,
+    showCreatedAt: true,
+    createdAtFormat: 'date_only',
+    gridGapXMm: 1.5,
+    gridGapYMm: 1.5,
+    marginX: 8,
+    marginY: 8,
+    qrSizeMm: 18,
+    cardsPerRow: 3,
+    cardsPerCol: 8,
+    cardWidthMm: 63,
+    cardHeightMm: 33,
+    fontSizeTitle: 11,
+    fontSizeCode: 17,
+    fontSizePrice: 12,
+    fontSizeMeta: 9,
+    customHeader: 'إنترنت هولوجرامي فائق السرعة والأداء',
+    customFooter: 'سرعة تنزيل فائقة ومزامنة فورية',
+    themeStyle: 'holo_prism_2026'
+  },
+  {
+    id: 'tpl_quantum_core_2026_svg',
+    name: '⚡ المعالج الكمومي النيوني (Quantum Core AI 2026)',
+    bgType: 'image',
+    bgColor: '#020817',
+    bgGradientStart: '#020817',
+    bgGradientEnd: '#041f1e',
+    bgImage: svgToDataUri(SVG_QUANTUM_CORE_2026),
+    svgCode: SVG_QUANTUM_CORE_2026,
+    textColor: '#f0fdf4',
+    accentColor: '#10b981',
+    badgeBg: '#06b6d4',
+    badgeTextColor: '#020817',
+    codeBoxStyle: 'heavy_contrast',
+    codeBoxBg: '#021815',
+    codeBoxBorderColor: '#10b981',
+    codeBoxTextColor: '#10b981',
+    codeFontWeight: 'black',
+    codeLetterSpacing: 'wider',
+    isWideCodeForPrint: true,
+    showQr: true,
+    showCode: true,
+    showPin: true,
+    showPrice: true,
+    showProfileName: true,
+    showUptime: true,
+    showByteLimit: true,
+    showNetworkName: true,
+    showCutLines: true,
+    showScratchGuide: false,
+    showCreatedAt: true,
+    createdAtFormat: 'date_only',
+    gridGapXMm: 1.5,
+    gridGapYMm: 1.5,
+    marginX: 8,
+    marginY: 8,
+    qrSizeMm: 18,
+    cardsPerRow: 3,
+    cardsPerCol: 8,
+    cardWidthMm: 63,
+    cardHeightMm: 33,
+    fontSizeTitle: 11,
+    fontSizeCode: 17,
+    fontSizePrice: 12,
+    fontSizeMeta: 9,
+    customHeader: 'باقة التردد الكمومي فائق الاستقرار',
+    customFooter: 'اتصال مشفر عالي التردد للألعاب والأعمال',
+    themeStyle: 'quantum_core_2026'
+  },
+  {
+    id: 'tpl_aurora_cyber_2026_svg',
+    name: '🌌 الشفق السيبراني التوليدي (Aurora Cyber AI 2026)',
+    bgType: 'image',
+    bgColor: '#020617',
+    bgGradientStart: '#020617',
+    bgGradientEnd: '#090d21',
+    bgImage: svgToDataUri(SVG_AURORA_CYBER_2026),
+    svgCode: SVG_AURORA_CYBER_2026,
+    textColor: '#f8fafc',
+    accentColor: '#34d399',
+    badgeBg: '#8b5cf6',
+    badgeTextColor: '#ffffff',
+    codeBoxStyle: 'neon_glow',
+    codeBoxBg: '#0c0f24',
+    codeBoxBorderColor: '#34d399',
+    codeBoxTextColor: '#ffffff',
+    codeFontWeight: 'black',
+    codeLetterSpacing: 'widest',
+    isWideCodeForPrint: true,
+    showQr: true,
+    showCode: true,
+    showPin: true,
+    showPrice: true,
+    showProfileName: true,
+    showUptime: true,
+    showByteLimit: true,
+    showNetworkName: true,
+    showCutLines: true,
+    showScratchGuide: false,
+    showCreatedAt: true,
+    createdAtFormat: 'date_only',
+    gridGapXMm: 1.5,
+    gridGapYMm: 1.5,
+    marginX: 8,
+    marginY: 8,
+    qrSizeMm: 18,
+    cardsPerRow: 3,
+    cardsPerCol: 8,
+    cardWidthMm: 63,
+    cardHeightMm: 33,
+    fontSizeTitle: 11,
+    fontSizeCode: 17,
+    fontSizePrice: 12,
+    fontSizeMeta: 9,
+    customHeader: 'شبكة الشفق الكونية الذكية 2026',
+    customFooter: 'سرعات فائقة وتغطية سلسة في كل الأوقات',
+    themeStyle: 'aurora_cyber_2026'
+  },
+  {
+    id: 'tpl_titanium_stealth_2026_svg',
+    name: '💎 التيتانيوم الفضائي الذكي (Aerospace Titanium 2026)',
+    bgType: 'image',
+    bgColor: '#0f1117',
+    bgGradientStart: '#0f1117',
+    bgGradientEnd: '#181c26',
+    bgImage: svgToDataUri(SVG_TITANIUM_STEALTH_2026),
+    svgCode: SVG_TITANIUM_STEALTH_2026,
+    textColor: '#f8fafc',
+    accentColor: '#38bdf8',
+    badgeBg: '#38bdf8',
+    badgeTextColor: '#0b1120',
+    codeBoxStyle: 'modern_box',
+    codeBoxBg: '#111520',
+    codeBoxBorderColor: '#38bdf8',
+    codeBoxTextColor: '#ffffff',
+    codeFontWeight: 'black',
+    codeLetterSpacing: 'widest',
+    isWideCodeForPrint: true,
+    showQr: true,
+    showCode: true,
+    showPin: true,
+    showPrice: true,
+    showProfileName: true,
+    showUptime: true,
+    showByteLimit: true,
+    showNetworkName: true,
+    showCutLines: true,
+    showScratchGuide: false,
+    showCreatedAt: true,
+    createdAtFormat: 'date_only',
+    gridGapXMm: 1.5,
+    gridGapYMm: 1.5,
+    marginX: 8,
+    marginY: 8,
+    qrSizeMm: 18,
+    cardsPerRow: 3,
+    cardsPerCol: 8,
+    cardWidthMm: 63,
+    cardHeightMm: 33,
+    fontSizeTitle: 11,
+    fontSizeCode: 17,
+    fontSizePrice: 12,
+    fontSizeMeta: 9,
+    customHeader: 'هندسة شبكات فضائية موجهة فائقة القوة',
+    customFooter: 'استقرار دائم وربط فوري خالي من الانقطاع',
+    themeStyle: 'stealth_titanium_2026'
+  },
+  {
+    id: 'tpl_minimal_tech_2026_svg',
+    name: '⚪ التقنية البيضاء فائقة التباين (Minimal Quantum White 2026)',
+    bgType: 'image',
+    bgColor: '#ffffff',
+    bgGradientStart: '#ffffff',
+    bgGradientEnd: '#f8fafc',
+    bgImage: svgToDataUri(SVG_MINIMAL_TECH_2026),
+    svgCode: SVG_MINIMAL_TECH_2026,
+    textColor: '#0f172a',
+    accentColor: '#0284c7',
+    badgeBg: '#0f172a',
+    badgeTextColor: '#ffffff',
+    codeBoxStyle: 'heavy_contrast',
+    codeBoxBg: '#f1f5f9',
+    codeBoxBorderColor: '#0f172a',
+    codeBoxTextColor: '#000000',
+    codeFontWeight: 'black',
+    codeLetterSpacing: 'widest',
+    isWideCodeForPrint: true,
+    showQr: true,
+    showCode: true,
+    showPin: true,
+    showPrice: true,
+    showProfileName: true,
+    showUptime: true,
+    showByteLimit: true,
+    showNetworkName: true,
+    showCutLines: true,
+    showScratchGuide: false,
+    showCreatedAt: true,
+    createdAtFormat: 'date_only',
+    gridGapXMm: 1.5,
+    gridGapYMm: 1.5,
+    marginX: 8,
+    marginY: 8,
+    qrSizeMm: 18,
+    cardsPerRow: 3,
+    cardsPerCol: 8,
+    cardWidthMm: 63,
+    cardHeightMm: 33,
+    fontSizeTitle: 11,
+    fontSizeCode: 17,
+    fontSizePrice: 12,
+    fontSizeMeta: 9,
+    customHeader: 'بطاقة موفرة للحبر بأرقام عريضة واضحة 100%',
+    customFooter: 'امسح الباركود أو ادخل الرمز في المتصفح',
+    themeStyle: 'clean_white'
+  },
   {
     id: 'tpl_cyber_neon_svg',
     name: 'نمط نيون عصري داكن (Cyberpunk / Dark Neon)',
@@ -930,6 +1465,108 @@ export interface ColorSchemePreset {
 
 export const COLOR_SCHEME_PRESETS: ColorSchemePreset[] = [
   {
+    id: 'neural_ai_2026',
+    name: '🧠 ذكاء اصطناعي عصبي 2026',
+    category: 'dark',
+    badge: '⚡ جيل 2026 المتطور',
+    bgColor: '#030712',
+    bgGradientStart: '#030712',
+    bgGradientEnd: '#091329',
+    textColor: '#fdf4ff',
+    accentColor: '#00f5ff',
+    badgeBg: '#6366f1',
+    badgeTextColor: '#ffffff',
+    codeBoxBg: '#090d21',
+    codeBoxBorderColor: '#00f5ff',
+    codeBoxTextColor: '#ffffff',
+    borderColor: '#00f5ff'
+  },
+  {
+    id: 'holo_prism_2026',
+    name: '🔮 هولوجرام سيبراني 3D',
+    category: 'vibrant',
+    badge: '✨ ثلاثي الأبعاد',
+    bgColor: '#05030e',
+    bgGradientStart: '#05030e',
+    bgGradientEnd: '#08142c',
+    textColor: '#ffffff',
+    accentColor: '#00dfd8',
+    badgeBg: '#ff007f',
+    badgeTextColor: '#ffffff',
+    codeBoxBg: '#080517',
+    codeBoxBorderColor: '#00dfd8',
+    codeBoxTextColor: '#ffffff',
+    borderColor: '#00dfd8'
+  },
+  {
+    id: 'quantum_core_2026',
+    name: '⚡ معالج كمومي نيوني',
+    category: 'dark',
+    badge: '🟢 سرعات كمومية',
+    bgColor: '#020817',
+    bgGradientStart: '#020817',
+    bgGradientEnd: '#041f1e',
+    textColor: '#f0fdf4',
+    accentColor: '#10b981',
+    badgeBg: '#06b6d4',
+    badgeTextColor: '#020817',
+    codeBoxBg: '#021815',
+    codeBoxBorderColor: '#10b981',
+    codeBoxTextColor: '#10b981',
+    borderColor: '#10b981'
+  },
+  {
+    id: 'aurora_cyber_2026',
+    name: '🌌 شفق سيبراني 2026',
+    category: 'vibrant',
+    badge: '🔮 تدرج توليدي',
+    bgColor: '#020617',
+    bgGradientStart: '#020617',
+    bgGradientEnd: '#090d21',
+    textColor: '#f8fafc',
+    accentColor: '#34d399',
+    badgeBg: '#8b5cf6',
+    badgeTextColor: '#ffffff',
+    codeBoxBg: '#0c0f24',
+    codeBoxBorderColor: '#34d399',
+    codeBoxTextColor: '#ffffff',
+    borderColor: '#34d399'
+  },
+  {
+    id: 'stealth_titanium_2026',
+    name: '💎 تيتانيوم فضائي ذكي',
+    category: 'dark',
+    badge: '🛡️ هندسة طيران',
+    bgColor: '#0f1117',
+    bgGradientStart: '#0f1117',
+    bgGradientEnd: '#181c26',
+    textColor: '#f8fafc',
+    accentColor: '#38bdf8',
+    badgeBg: '#38bdf8',
+    badgeTextColor: '#0b1120',
+    codeBoxBg: '#111520',
+    codeBoxBorderColor: '#38bdf8',
+    codeBoxTextColor: '#ffffff',
+    borderColor: '#38bdf8'
+  },
+  {
+    id: 'clean_quantum_white',
+    name: '⚪ تقنية بيضاء فائقة التباين',
+    category: 'light',
+    badge: '🖨️ وضوح طباعة 100%',
+    bgColor: '#ffffff',
+    bgGradientStart: '#ffffff',
+    bgGradientEnd: '#f8fafc',
+    textColor: '#0f172a',
+    accentColor: '#0284c7',
+    badgeBg: '#0f172a',
+    badgeTextColor: '#ffffff',
+    codeBoxBg: '#f1f5f9',
+    codeBoxBorderColor: '#0f172a',
+    codeBoxTextColor: '#000000',
+    borderColor: '#0f172a'
+  },
+  {
     id: 'fiber_blue',
     name: 'أزرق فايبر الملكي',
     category: 'dark',
@@ -1105,8 +1742,9 @@ export const COLOR_SCHEME_PRESETS: ColorSchemePreset[] = [
 // CARD CORNER SHAPE PRESETS (BORDER RADIUS)
 // ==========================================
 export const CARD_SHAPE_PRESETS = [
-  { id: 'sharp', label: 'مربع حاد', radius: 0, desc: 'زوايا 0 مم (قص مستقيم حاد)' },
+  { id: 'cyber_chamfer', label: 'مشطوف تقني 2026', radius: 10, desc: 'زوايا مشطوفة تكنولوجية Cyber' },
+  { id: 'modern', label: 'دائري عصري 2026', radius: 16, desc: 'زوايا 5 مم عصرية ناعمة' },
   { id: 'classic', label: 'كلاسيكي ناعم', radius: 8, desc: 'زوايا 2.5 مم كلاسيكية' },
-  { id: 'modern', label: 'دائري عصري', radius: 16, desc: 'زوايا 5 مم عصرية ناعمة' },
+  { id: 'sharp', label: 'مربع هندسي حاد', radius: 0, desc: 'زوايا 0 مم (قص مستقيم حاد)' },
   { id: 'pill', label: 'كبسولة دائرية', radius: 26, desc: 'زوايا كروية ناعمة جداً' }
 ];

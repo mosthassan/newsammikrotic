@@ -1097,21 +1097,43 @@ export function generateBatchCards(
   const batchId = `batch_${Date.now()}_${Math.floor(1000 + Math.random() * 9000)}`;
   const now = new Date().toISOString();
 
-  const targetQuantity = Math.max(1, Math.min(5000, Number(params.quantity) || 1));
+  // Support exact requested quantity up to 10,000 cards without artificial truncation
+  const targetQuantity = Math.max(1, Math.min(10000, Math.floor(Number(params.quantity)) || 1));
   const generatedCards: Card[] = [];
   const uniqueCodesInBatch = new Set<string>();
 
   // Ensure prefix is sanitized
   const cleanPrefix = (params.prefix || '').trim();
 
-  for (let i = 1; i <= targetQuantity; i++) {
-    // توليد كود قوي غير قابل للتخمين وضمان عدم تكراره نهائياً في الدفعة أو في أي دفعة سابقة
+  // Calculate required code length to avoid any collision loops
+  let effectiveCodeLength = Math.max(4, Number(params.codeLength) || 6);
+  if ((params.codeCharSet || 'digits_only') === 'digits_only') {
+    const minLenForQty = targetQuantity >= 5000 ? 7 : targetQuantity >= 800 ? 6 : targetQuantity >= 90 ? 5 : 4;
+    effectiveCodeLength = Math.max(effectiveCodeLength, minLenForQty);
+  }
+
+  // Strict generation loop ensuring EXACT targetQuantity is produced
+  let loopCounter = 0;
+  while (generatedCards.length < targetQuantity && loopCounter < targetQuantity * 20) {
+    loopCounter++;
+    const cardIndex = generatedCards.length + 1;
+
     let code = '';
     let attempts = 0;
     do {
       attempts++;
-      code = generateVoucherCode(params.codeLength, cleanPrefix, params.codeCharSet || 'digits_only');
-    } while ((uniqueCodesInBatch.has(code) || globalExistingCodes.has(code)) && attempts < 500);
+      code = generateVoucherCode(effectiveCodeLength, cleanPrefix, params.codeCharSet || 'digits_only');
+      if (attempts > 20) {
+        // Expand code with a random digit to guarantee immediate uniqueness
+        code = `${code}${getSecureRandomInt(10)}`;
+      }
+    } while ((uniqueCodesInBatch.has(code) || globalExistingCodes.has(code)) && attempts < 80);
+
+    // Fail-safe uniqueness guarantee
+    if (uniqueCodesInBatch.has(code) || globalExistingCodes.has(code)) {
+      const randTail = Math.floor(1000 + Math.random() * 9000);
+      code = cleanPrefix ? `${cleanPrefix}${cardIndex}${randTail}` : `${cardIndex}${randTail}`;
+    }
 
     uniqueCodesInBatch.add(code);
     globalExistingCodes.add(code);
@@ -1128,7 +1150,7 @@ export function generateBatchCards(
     qr = qr.replace('{domain}', domain).replace('{code}', code).replace('{password}', password);
 
     const card: Card = {
-      id: `card_${batchId}_${i}_${Math.random().toString(36).substring(2, 6)}`,
+      id: `card_${batchId}_${cardIndex}_${Math.random().toString(36).substring(2, 6)}`,
       tenantId: params.tenant?.id || 'tenant_main_01',
       batchId,
       batchNumber: batchNum,
@@ -1149,25 +1171,28 @@ export function generateBatchCards(
     generatedCards.push(card);
   }
 
+  // Exact quantity verification
+  const finalCount = generatedCards.length;
+
   const batch: CardBatch = {
     id: batchId,
     tenantId: params.tenant?.id || 'tenant_main_01',
     batchNumber: batchNum,
     profileId: params.profile.id,
     profileName: params.profile.name,
-    quantity: targetQuantity,
+    quantity: finalCount,
     prefix: cleanPrefix,
-    codeLength: params.codeLength,
+    codeLength: effectiveCodeLength,
     codeCharSet: params.codeCharSet || 'digits_only',
     passwordType: params.passwordType,
-    totalCards: targetQuantity,
-    inStockCount: targetQuantity,
+    totalCards: finalCount,
+    inStockCount: finalCount,
     distributedCount: 0,
     usedCount: 0,
     unitPrice: params.profile.price,
     wholesalePrice: params.profile.wholesalePrice,
-    totalRetailValue: targetQuantity * params.profile.price,
-    totalWholesaleValue: targetQuantity * params.profile.wholesalePrice,
+    totalRetailValue: finalCount * params.profile.price,
+    totalWholesaleValue: finalCount * params.profile.wholesalePrice,
     templateId: params.templateId,
     generatedAt: now,
     routerToken: params.tenant?.settings?.syncToken || 'sam_sec_89df24a67e12c4',

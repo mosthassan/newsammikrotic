@@ -521,6 +521,20 @@ export const InteractiveCardCanvas: React.FC<InteractiveCardCanvasProps> = ({
             const p = getPos('code');
             const isSelected = selectedElement === 'code';
             const codeStyle = template.codeBoxStyle || 'modern_box';
+            const customBg = template.codeBoxBg || (isDark ? 'rgba(2, 6, 23, 0.95)' : '#f8fafc');
+            const customBorder = template.codeBoxBorderColor || (isDark ? '#38bdf8' : '#0284c7');
+            const customText = template.codeBoxTextColor || (isDark ? '#ffffff' : '#020617');
+
+            let styleClass = 'rounded-xl border shadow-inner';
+            if (codeStyle === 'pill_badge') styleClass = 'rounded-full border-2';
+            else if (codeStyle === 'ai_neon_pill') styleClass = 'rounded-full border-2 ring-1 ring-white/50 shadow-[0_0_12px_rgba(0,245,255,0.4)]';
+            else if (codeStyle === 'cyber_bracket') styleClass = 'rounded-sm border-x-4 border-y border-sky-400';
+            else if (codeStyle === 'quantum_hud') styleClass = 'rounded-md border-2 border-cyan-400 ring-1 ring-cyan-500/30';
+            else if (codeStyle === 'glass_morphism') styleClass = 'rounded-lg border border-white/40 backdrop-blur-md';
+            else if (codeStyle === 'ticket_dashed') styleClass = 'rounded-md border-2 border-dashed shadow-inner';
+            else if (codeStyle === 'neon_glow') styleClass = 'rounded-md border-2 shadow-[0_0_10px_rgba(56,189,248,0.5)]';
+            else if (codeStyle === 'minimal_clean') styleClass = 'border-b-2 rounded-none';
+
             return (
               <div
                 onMouseDown={e => handleMouseDown(e, 'code')}
@@ -528,14 +542,18 @@ export const InteractiveCardCanvas: React.FC<InteractiveCardCanvasProps> = ({
                   position: 'absolute',
                   right: `${p.x}%`,
                   top: `${p.y}%`,
-                  fontSize: `${p.fontSize || 14}px`
+                  fontSize: `${p.fontSize || 15}px`,
+                  backgroundColor: customBg,
+                  borderColor: customBorder,
+                  color: customText,
+                  fontFamily: template.codeFontFamily || "'Arial Black', 'Segoe UI Black', 'Impact', 'Consolas', monospace",
+                  letterSpacing: template.codeLetterSpacing === 'widest' ? '0.16em' : template.codeLetterSpacing === 'wider' ? '0.12em' : '0.08em',
+                  fontWeight: 900
                 }}
                 dir="ltr"
-                className={`cursor-move rounded-xl px-3 py-1 font-mono font-bold tracking-wider shadow-inner text-center flex items-center justify-center gap-1 transition ${
-                  isDark
-                    ? 'bg-slate-900/90 text-sky-300 border border-sky-500/50'
-                    : 'bg-slate-100 text-slate-900 border border-slate-300'
-                } ${isSelected ? 'ring-2 ring-emerald-400 scale-105 z-30 shadow-xl' : 'hover:ring-1 hover:ring-sky-400/50'}`}
+                className={`cursor-move px-3 py-1 font-mono font-bold tracking-wider text-center flex items-center justify-center gap-1 transition ${styleClass} ${
+                  isSelected ? 'ring-2 ring-emerald-400 scale-105 z-30 shadow-xl' : 'hover:ring-1 hover:ring-sky-400/50'
+                }`}
               >
                 {codeStyle === 'split_pin' ? (
                   <div className="flex items-center justify-center gap-0.5" dir="ltr">

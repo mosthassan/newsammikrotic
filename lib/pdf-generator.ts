@@ -206,7 +206,7 @@ function drawStyledPriceTag(
   ctx.restore();
 }
 
-// Helper to draw custom styled code box
+// Helper to draw custom styled code box with ultra-bold and wide print rendering
 function drawStyledCodeBox(
   ctx: CanvasRenderingContext2D,
   x: number,
@@ -221,44 +221,124 @@ function drawStyledCodeBox(
   isDarkCard: boolean,
   dpiScale: number,
   autoScale: number,
-  fontStack: string
+  fontStack: string,
+  customFontSize?: number,
+  isWidePrint: boolean = true,
+  codeLetterSpacing?: string,
+  codeFontWeight: string = 'black',
+  codeFontFamily?: string
 ) {
-  const boxBg = bg || (isDarkCard ? '#090e1f' : '#f8fafc');
+  const boxBg = bg || (isDarkCard ? '#070b19' : '#f8fafc');
   const boxBorder = borderColor || (isDarkCard ? '#38bdf8' : '#0284c7');
   const boxText = textColor || (isDarkCard ? '#ffffff' : '#020617');
 
   ctx.save();
+
+  // 1. Split Pin Style: Individual high-contrast digit cards
   if (style === 'split_pin') {
     const chars = code.split('');
     const charCount = Math.max(1, chars.length);
-    const gap = 1.0 * dpiScale * autoScale;
+    const gap = 1.2 * dpiScale * autoScale;
     const totalGaps = (charCount - 1) * gap;
-    const boxW = Math.min(h * 0.9, (w - totalGaps) / charCount);
+    const boxW = Math.min(h * 0.95, (w - totalGaps) / charCount);
     const totalW = charCount * boxW + totalGaps;
     const startX = x + (w - totalW) / 2;
-    const fontSize = Math.round(Math.max(3.0, 3.8 * autoScale) * dpiScale);
-    ctx.font = `900 ${fontSize}px 'Courier New', monospace, ${fontStack}`;
+    // Enhanced large bold font for segmented digits
+    const fontSize = Math.round(Math.max(h * 0.68, 4.2 * autoScale * dpiScale));
+    const fontName = codeFontFamily || "'Arial Black', 'Segoe UI Black', 'Impact', 'Consolas', monospace";
+    ctx.font = `900 ${fontSize}px ${fontName}, monospace`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
 
     for (let i = 0; i < charCount; i++) {
       const bx = startX + i * (boxW + gap);
       ctx.fillStyle = boxBg;
-      drawRoundedRect(ctx, bx, y, boxW, h, 1.5 * dpiScale, true, false);
+      drawRoundedRect(ctx, bx, y, boxW, h, 2 * dpiScale, true, false);
       ctx.strokeStyle = boxBorder;
-      ctx.lineWidth = 1.4;
-      drawRoundedRect(ctx, bx, y, boxW, h, 1.5 * dpiScale, false, true);
+      ctx.lineWidth = 1.8;
+      drawRoundedRect(ctx, bx, y, boxW, h, 2 * dpiScale, false, true);
 
       ctx.fillStyle = boxText;
-      ctx.fillText(chars[i], bx + boxW / 2, y + h / 2);
+      ctx.fillText(chars[i], bx + boxW / 2, y + h / 2 + 0.5);
     }
     ctx.restore();
     return;
   }
 
-  const radius = style === 'pill_badge' ? h / 2 : 2.5 * dpiScale;
+  const radius = (style === 'pill_badge' || style === 'ai_neon_pill') ? h / 2 : 2.5 * dpiScale;
 
-  if (style === 'ticket_dashed') {
+  if (style === 'ai_neon_pill') {
+    // 2026 AI Capsule with dual high-luminance neon border
+    ctx.fillStyle = boxBg;
+    drawRoundedRect(ctx, x, y, w, h, radius, true, false);
+    ctx.shadowColor = boxBorder;
+    ctx.shadowBlur = 6 * dpiScale;
+    ctx.strokeStyle = boxBorder;
+    ctx.lineWidth = 2.2;
+    drawRoundedRect(ctx, x, y, w, h, radius, false, true);
+    ctx.shadowBlur = 0;
+    // Inner crisp accent ring
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 0.8;
+    drawRoundedRect(ctx, x + 1.2 * dpiScale, y + 1.2 * dpiScale, w - 2.4 * dpiScale, h - 2.4 * dpiScale, radius - 1, false, true);
+  } else if (style === 'cyber_bracket') {
+    // 2026 AI Cyber HUD with outer bracket accents
+    ctx.fillStyle = boxBg;
+    drawRoundedRect(ctx, x, y, w, h, 2 * dpiScale, true, false);
+    ctx.strokeStyle = boxBorder;
+    ctx.lineWidth = 1.5;
+    drawRoundedRect(ctx, x, y, w, h, 2 * dpiScale, false, true);
+    // Draw cyber brackets on left and right
+    const bracketLen = Math.min(w * 0.12, 5 * dpiScale * autoScale);
+    ctx.strokeStyle = '#00f5ff';
+    ctx.lineWidth = 2.5;
+    // Left bracket [
+    ctx.beginPath();
+    ctx.moveTo(x + bracketLen, y);
+    ctx.lineTo(x, y);
+    ctx.lineTo(x, y + h);
+    ctx.lineTo(x + bracketLen, y + h);
+    ctx.stroke();
+    // Right bracket ]
+    ctx.beginPath();
+    ctx.moveTo(x + w - bracketLen, y);
+    ctx.lineTo(x + w, y);
+    ctx.lineTo(x + w, y + h);
+    ctx.lineTo(x + w - bracketLen, y + h);
+    ctx.stroke();
+  } else if (style === 'quantum_hud') {
+    // 2026 Quantum HUD with corner crosshairs
+    ctx.fillStyle = boxBg;
+    drawRoundedRect(ctx, x, y, w, h, 1.5 * dpiScale, true, false);
+    ctx.strokeStyle = boxBorder;
+    ctx.lineWidth = 1.6;
+    drawRoundedRect(ctx, x, y, w, h, 1.5 * dpiScale, false, true);
+    const cornerSize = 3.5 * dpiScale * autoScale;
+    ctx.strokeStyle = '#38bdf8';
+    ctx.lineWidth = 2;
+    // Top-left corner
+    ctx.beginPath();
+    ctx.moveTo(x, y + cornerSize); ctx.lineTo(x, y); ctx.lineTo(x + cornerSize, y);
+    ctx.stroke();
+    // Top-right corner
+    ctx.beginPath();
+    ctx.moveTo(x + w - cornerSize, y); ctx.lineTo(x + w, y); ctx.lineTo(x + w, y + cornerSize);
+    ctx.stroke();
+  } else if (style === 'glass_morphism') {
+    // Frosted glass with bright edge highlights
+    ctx.fillStyle = isDarkCard ? 'rgba(15, 23, 42, 0.92)' : 'rgba(255, 255, 255, 0.95)';
+    drawRoundedRect(ctx, x, y, w, h, 2.5 * dpiScale, true, false);
+    ctx.strokeStyle = boxBorder;
+    ctx.lineWidth = 1.8;
+    drawRoundedRect(ctx, x, y, w, h, 2.5 * dpiScale, false, true);
+    // Subtle top highlight
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(x + 2, y + 1);
+    ctx.lineTo(x + w - 2, y + 1);
+    ctx.stroke();
+  } else if (style === 'ticket_dashed') {
     ctx.fillStyle = boxBg;
     drawRoundedRect(ctx, x, y, w, h, radius, true, false);
     drawDashedRect(ctx, x, y, w, h, [4, 4], boxBorder);
@@ -269,30 +349,60 @@ function drawStyledCodeBox(
     drawRoundedRect(ctx, x, y, w, h, radius, true, false);
     ctx.shadowBlur = 0;
     ctx.strokeStyle = boxBorder;
-    ctx.lineWidth = 1.8;
+    ctx.lineWidth = 2.0;
     drawRoundedRect(ctx, x, y, w, h, radius, false, true);
   } else if (style === 'minimal_clean') {
     ctx.fillStyle = boxBg;
     drawRoundedRect(ctx, x, y, w, h, radius, true, false);
     ctx.strokeStyle = boxBorder;
-    ctx.lineWidth = 1;
+    ctx.lineWidth = 1.6;
     drawRoundedRect(ctx, x, y, w, h, radius, false, true);
   } else {
     // modern_box or pill_badge
     ctx.fillStyle = boxBg;
     drawRoundedRect(ctx, x, y, w, h, radius, true, false);
     ctx.strokeStyle = boxBorder;
-    ctx.lineWidth = 1.75;
+    ctx.lineWidth = 1.85;
     drawRoundedRect(ctx, x, y, w, h, radius, false, true);
   }
 
-  // Code text
+  // --- Ultra-Bold & Wide Print Typography ---
   ctx.fillStyle = boxText;
-  const fontSize = Math.round(Math.max(3.2, 4.0 * autoScale) * dpiScale);
-  ctx.font = `900 ${fontSize}px 'Courier New', monospace, ${fontStack}`;
+  
+  // Calculate large, thick font size that fills box height cleanly (68% of box height)
+  let fontSize: number;
+  if (customFontSize && customFontSize > 0) {
+    fontSize = Math.round(customFontSize * 0.40 * dpiScale * autoScale);
+  } else {
+    fontSize = Math.round(Math.max(h * 0.68, 5.0 * autoScale * dpiScale));
+  }
+  // Enforce minimum readable print threshold
+  fontSize = Math.max(fontSize, Math.round(4.6 * autoScale * dpiScale));
+
+  const weightStr = codeFontWeight === 'black' ? '900' : codeFontWeight === 'extrabold' ? '800' : '700';
+  const fontFamily = codeFontFamily || "'Arial Black', 'Segoe UI Black', 'Impact', 'Consolas', 'Trebuchet MS', monospace";
+  
+  ctx.font = `${weightStr} ${fontSize}px ${fontFamily}, ${fontStack}`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText(code, x + w / 2, y + h / 2);
+
+  // Apply wide letter spacing if supported by canvas
+  try {
+    if (isWidePrint || codeLetterSpacing === 'wide' || codeLetterSpacing === 'wider' || codeLetterSpacing === 'widest') {
+      const spacingPx = codeLetterSpacing === 'widest' ? '2.5px' : codeLetterSpacing === 'wider' ? '2.0px' : '1.5px';
+      (ctx as any).letterSpacing = spacingPx;
+    }
+  } catch (e) {
+    // fallback if browser canvas letterSpacing not supported
+  }
+
+  ctx.fillText(code, x + w / 2, y + h / 2 + 0.5);
+  
+  // Reset letter spacing
+  try {
+    (ctx as any).letterSpacing = '0px';
+  } catch (e) {}
+
   ctx.restore();
 }
 
@@ -688,8 +798,8 @@ export async function generateCardsPdf(
         // Voucher Code Box
         if (template.showCode) {
           const p = getCustomPos('code');
-          const codeW = cardW * 0.52;
-          const codeH = 7.5 * dpiScale * autoScale;
+          const codeW = cardW * 0.54;
+          const codeH = Math.max(8.5 * dpiScale * autoScale, ((p.fontSize || template.fontSizeCode || 16) * 0.52) * dpiScale * autoScale);
           const posX = cardX + cardW - ((p.x ?? 40) / 100) * cardW - codeW;
           const posY = cardY + ((p.y ?? 44) / 100) * cardH;
 
@@ -707,7 +817,12 @@ export async function generateCardsPdf(
             isDarkCard,
             dpiScale,
             autoScale,
-            fontStack
+            fontStack,
+            p.fontSize || template.fontSizeCode || 16,
+            template.isWideCodeForPrint !== false,
+            template.codeLetterSpacing || 'wide',
+            template.codeFontWeight || 'black',
+            template.codeFontFamily
           );
 
           if (template.showScratchGuide) {
@@ -901,7 +1016,7 @@ export async function generateCardsPdf(
           const centerLeft = cardX + pad + (qrPx > 0 ? qrPx + 2.5 * dpiScale * autoScale : 0);
           const centerRight = cardX + cardW - pad - rightW - 2.5 * dpiScale * autoScale;
           const centerW = Math.max(10, centerRight - centerLeft);
-          const codeH = Math.min(availH * 0.58, 6.6 * dpiScale * autoScale);
+          const codeH = Math.min(availH * 0.68, 8.8 * dpiScale * autoScale);
           const codeY = cardY + (cardH - codeH) / 2;
 
           drawStyledCodeBox(
@@ -918,7 +1033,12 @@ export async function generateCardsPdf(
             isDarkCard,
             dpiScale,
             autoScale,
-            fontStack
+            fontStack,
+            template.fontSizeCode || 16,
+            template.isWideCodeForPrint !== false,
+            template.codeLetterSpacing || 'wide',
+            template.codeFontWeight || 'black',
+            template.codeFontFamily
           );
 
           // Meta below code box
@@ -1053,7 +1173,7 @@ export async function generateCardsPdf(
 
           // Voucher Code Box (Ultra-Crisp Monospace Container)
           if (template.showCode) {
-            const codeBoxH = (isDense ? 6.2 : 7.4) * dpiScale * autoScale;
+            const codeBoxH = (isDense ? 7.6 : 9.5) * dpiScale * autoScale;
             const codeBoxY = currentItemY;
 
             drawStyledCodeBox(
@@ -1070,7 +1190,12 @@ export async function generateCardsPdf(
               isDarkCard,
               dpiScale,
               autoScale,
-              fontStack
+              fontStack,
+              template.fontSizeCode || 16,
+              template.isWideCodeForPrint !== false,
+              template.codeLetterSpacing || 'wide',
+              template.codeFontWeight || 'black',
+              template.codeFontFamily
             );
 
             // Scratch Guide Foil (if enabled)
@@ -1104,11 +1229,12 @@ export async function generateCardsPdf(
             ctx.save();
             ctx.direction = 'rtl';
             ctx.textAlign = 'right';
-            ctx.fillStyle = '#fbbf24';
-            ctx.font = `700 ${Math.round(Math.max(2.3, 2.5 * autoScale) * dpiScale)}px ${fontStack}`;
-            ctx.fillText(`الرمز السري PIN: ${card.password}`, contentRight, currentItemY + 2.0 * dpiScale * autoScale, contentWidth);
+            ctx.fillStyle = '#f59e0b';
+            const pinFontFamily = template.codeFontFamily || "'Arial Black', 'Impact', 'Consolas', monospace";
+            ctx.font = `800 ${Math.round(Math.max(2.8, 3.2 * autoScale) * dpiScale)}px ${pinFontFamily}, ${fontStack}`;
+            ctx.fillText(`الرمز السري PIN: ${card.password}`, contentRight, currentItemY + 2.4 * dpiScale * autoScale, contentWidth);
             ctx.restore();
-            currentItemY += 3.4 * dpiScale * autoScale;
+            currentItemY += 3.8 * dpiScale * autoScale;
           }
 
           // Limits: Time, Quota, & Support Phone

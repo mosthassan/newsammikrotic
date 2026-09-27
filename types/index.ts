@@ -266,7 +266,7 @@ export interface CardTemplate {
   fontSizeMeta: number;
   customHeader?: string;
   customFooter?: string;
-  themeStyle: 'modern_dark' | 'cyber_neon' | 'clean_white' | 'emerald_pro' | 'royal_gold' | 'sky_blue' | 'stealth_carbon' | 'cosmic_violet' | 'geometric_prism' | 'sunset_coral' | 'executive_slate' | 'pure_cyan';
+  themeStyle: 'modern_dark' | 'cyber_neon' | 'clean_white' | 'emerald_pro' | 'royal_gold' | 'sky_blue' | 'stealth_carbon' | 'cosmic_violet' | 'geometric_prism' | 'sunset_coral' | 'executive_slate' | 'pure_cyan' | 'neural_ai_2026' | 'holo_prism_2026' | 'quantum_core_2026' | 'aurora_cyber_2026' | 'stealth_titanium_2026' | 'optic_matrix_2026' | 'nano_hex_2026' | 'cyber_gold_2026' | 'minimal_tech_2026' | string;
   marginX?: number;
   marginY?: number;
   borderRadius?: number;
@@ -285,7 +285,12 @@ export interface CardTemplate {
   qrType?: 'login_url' | 'code_only' | 'pin_code' | 'raw_text';
   // Element-Level Styling & Layout Shape Customization
   elementScale?: number; // Custom scale multiplier (default 1.0)
-  codeBoxStyle?: 'modern_box' | 'pill_badge' | 'ticket_dashed' | 'neon_glow' | 'minimal_clean' | 'split_pin';
+  codeBoxStyle?: 'modern_box' | 'pill_badge' | 'ticket_dashed' | 'neon_glow' | 'minimal_clean' | 'split_pin' | 'ai_neon_pill' | 'cyber_bracket' | 'heavy_contrast' | string;
+  codeFontWeight?: 'bold' | 'black' | 'extrabold';
+  codeLetterSpacing?: 'normal' | 'wide' | 'wider' | 'widest';
+  codeFontFamily?: string;
+  isWideCodeForPrint?: boolean;
+  cardCornerStyle?: 'rounded' | 'sharp' | 'cyber_chamfer' | 'hex_cut' | 'pill' | string;
   codeBoxBg?: string;
   codeBoxBorderColor?: string;
   codeBoxTextColor?: string;

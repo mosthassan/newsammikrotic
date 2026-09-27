@@ -322,11 +322,23 @@ export const CardPreview: React.FC<CardPreviewProps> = ({
           let extraStyle: React.CSSProperties = {
             backgroundColor: customBg,
             borderColor: customBorder,
-            color: customText
+            color: customText,
+            fontFamily: template.codeFontFamily || "'Arial Black', 'Segoe UI Black', 'Impact', 'Consolas', monospace",
+            letterSpacing: template.codeLetterSpacing === 'widest' ? '0.16em' : template.codeLetterSpacing === 'wider' ? '0.12em' : '0.08em',
+            fontWeight: 900
           };
 
           if (codeStyle === 'pill_badge') shapeClasses = 'rounded-full border-2 shadow-sm';
-          else if (codeStyle === 'ticket_dashed') shapeClasses = 'rounded-md border-2 border-dashed shadow-inner';
+          else if (codeStyle === 'ai_neon_pill') {
+            shapeClasses = 'rounded-full border-2 ring-1 ring-white/50';
+            extraStyle.boxShadow = `0 0 12px ${template.codeBoxBorderColor || '#00f5ff'}`;
+          } else if (codeStyle === 'cyber_bracket') {
+            shapeClasses = 'rounded-sm border-x-4 border-y border-sky-400';
+          } else if (codeStyle === 'quantum_hud') {
+            shapeClasses = 'rounded-md border-2 border-cyan-400 ring-1 ring-cyan-500/30';
+          } else if (codeStyle === 'glass_morphism') {
+            shapeClasses = 'rounded-lg border border-white/40 backdrop-blur-md';
+          } else if (codeStyle === 'ticket_dashed') shapeClasses = 'rounded-md border-2 border-dashed shadow-inner';
           else if (codeStyle === 'neon_glow') {
             shapeClasses = 'rounded-md border-2';
             extraStyle.boxShadow = `0 0 10px ${template.codeBoxBorderColor || '#38bdf8'}`;
@@ -618,11 +630,23 @@ export const CardPreview: React.FC<CardPreviewProps> = ({
   let codeExtraStyle: React.CSSProperties = {
     backgroundColor: codeBg,
     borderColor: codeBorder,
-    color: codeText
+    color: codeText,
+    fontFamily: template.codeFontFamily || "'Arial Black', 'Segoe UI Black', 'Impact', 'Consolas', monospace",
+    letterSpacing: template.codeLetterSpacing === 'widest' ? '0.16em' : template.codeLetterSpacing === 'wider' ? '0.12em' : '0.08em',
+    fontWeight: 900
   };
 
   if (codeStyle === 'pill_badge') codeShapeClass = 'rounded-full border-2 shadow-sm';
-  else if (codeStyle === 'ticket_dashed') codeShapeClass = 'rounded-md border-2 border-dashed shadow-inner';
+  else if (codeStyle === 'ai_neon_pill') {
+    codeShapeClass = 'rounded-full border-2 ring-1 ring-white/50';
+    codeExtraStyle.boxShadow = `0 0 12px ${template.codeBoxBorderColor || '#00f5ff'}`;
+  } else if (codeStyle === 'cyber_bracket') {
+    codeShapeClass = 'rounded-sm border-x-4 border-y border-sky-400';
+  } else if (codeStyle === 'quantum_hud') {
+    codeShapeClass = 'rounded-md border-2 border-cyan-400 ring-1 ring-cyan-500/30';
+  } else if (codeStyle === 'glass_morphism') {
+    codeShapeClass = 'rounded-lg border border-white/40 backdrop-blur-md';
+  } else if (codeStyle === 'ticket_dashed') codeShapeClass = 'rounded-md border-2 border-dashed shadow-inner';
   else if (codeStyle === 'neon_glow') {
     codeShapeClass = 'rounded-md border-2';
     codeExtraStyle.boxShadow = `0 0 10px ${template.codeBoxBorderColor || '#38bdf8'}`;

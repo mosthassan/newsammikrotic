@@ -133,7 +133,7 @@ export const InventoryManager: React.FC<InventoryManagerProps> = ({
     if (bId && (cBatchId === bId || cBatchNum === bId)) return true;
     if (bBatchId && (cBatchId === bBatchId || cBatchNum === bBatchId)) return true;
 
-    // 2. Batch number match (case-insensitive)
+    // 2. Batch number exact match (case-insensitive)
     if (bNum) {
       const bNumLower = bNum.toLowerCase();
       if (
@@ -146,16 +146,17 @@ export const InventoryManager: React.FC<InventoryManagerProps> = ({
       }
     }
 
-    // 3. Clean numeric match (e.g. 714 in B-714)
-    if (bNumClean && bNumClean.length >= 2) {
-      if (cBatchNumClean === bNumClean || cBatchId.includes(bNumClean) || cId.includes(bNumClean)) {
+    // 3. Clean numeric exact match (e.g. "101" === "101", avoiding substring collision)
+    if (bNumClean && bNumClean.length >= 1) {
+      if (cBatchNumClean === bNumClean) {
         return true;
       }
     }
 
     // 4. Card ID prefix matching
     if (bId && cId.startsWith(`card_${bId}_`)) return true;
-    if (bNum && cId.includes(`_${bNum}_`)) return true;
+    if (bBatchId && cId.startsWith(`card_${bBatchId}_`)) return true;
+    if (bNum && cId.startsWith(`card_${bNum}_`)) return true;
 
     return false;
   };
@@ -164,15 +165,15 @@ export const InventoryManager: React.FC<InventoryManagerProps> = ({
   const resolveBatchCardsSync = (batch: CardBatch): Card[] => {
     const targetCount = batch.quantity || batch.totalCards || 0;
 
-    // Tier 1: Search in loaded memory cards array
+    // Tier 1: Search in loaded memory cards array with exact count guarantee
     const matched = cards.filter(c => matchCardToBatch(c, batch));
     if (targetCount > 0 && matched.length >= targetCount) {
-      return matched;
+      return matched.slice(0, targetCount);
     }
 
     // Tier 2: Check embedded cards within the batch object
-    if (batch.cards && Array.isArray(batch.cards) && batch.cards.length >= targetCount && targetCount > 0) {
-      return (batch.cards as any[]).map((c, i) => ({
+    if (batch.cards && Array.isArray(batch.cards) && batch.cards.length > 0) {
+      const mapped = (batch.cards as any[]).map((c, i) => ({
         id: c.id || `card_${batch.id}_${i}`,
         tenantId: batch.tenantId || tenant.id || 'tenant_main_01',
         batchId: batch.id,
@@ -191,11 +192,18 @@ export const InventoryManager: React.FC<InventoryManagerProps> = ({
         createdAt: c.createdAt || batch.generatedAt || new Date().toISOString(),
         syncedToRouter: Boolean(c.syncedToRouter)
       }));
+
+      if (targetCount > 0 && mapped.length >= targetCount) {
+        return mapped.slice(0, targetCount);
+      }
+      if (mapped.length > matched.length) {
+        return targetCount > 0 ? mapped.slice(0, targetCount) : mapped;
+      }
     }
 
-    // If matched has any cards and is larger or equal to batch.cards, return it
-    if (matched.length > 0 && matched.length >= (batch.cards?.length || 0)) {
-      return matched;
+    // If matched has any cards, return up to targetCount
+    if (matched.length > 0) {
+      return targetCount > 0 ? matched.slice(0, targetCount) : matched;
     }
 
     if (batch.cards && Array.isArray(batch.cards) && batch.cards.length > 0) {
