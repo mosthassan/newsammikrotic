@@ -380,15 +380,41 @@ function drawStyledCodeBox(
   fontSize = Math.max(fontSize, Math.round(4.6 * autoScale * dpiScale));
 
   const weightStr = codeFontWeight === 'black' ? '900' : codeFontWeight === 'extrabold' ? '800' : '700';
-  const fontFamily = codeFontFamily || "'Arial Black', 'Segoe UI Black', 'Impact', 'Consolas', 'Trebuchet MS', monospace";
+  const fontFamily = codeFontFamily || "'Arial Black', 'Impact', 'Segoe UI Black', 'Consolas', 'Trebuchet MS', sans-serif";
   
   ctx.font = `${weightStr} ${fontSize}px ${fontFamily}, ${fontStack}`;
-  ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
 
-  // Apply wide letter spacing if supported by canvas
+  // Manual character-by-character wide letter spacing guarantee: ensures wide print works across ALL printers & canvas engines
+  const shouldWide = isWidePrint || codeLetterSpacing === 'wide' || codeLetterSpacing === 'wider' || codeLetterSpacing === 'widest';
+  if (shouldWide && code.length > 1) {
+    const extraSpace = codeLetterSpacing === 'widest' ? 3.0 * dpiScale * autoScale : codeLetterSpacing === 'wider' ? 2.2 * dpiScale * autoScale : 1.6 * dpiScale * autoScale;
+    let totalCodeWidth = 0;
+    const charWidths: number[] = [];
+    for (const c of code) {
+      const cw = ctx.measureText(c).width;
+      charWidths.push(cw);
+      totalCodeWidth += cw;
+    }
+    totalCodeWidth += (code.length - 1) * extraSpace;
+
+    // If total width fits inside box with comfortable padding
+    if (totalCodeWidth < w - 4 * dpiScale) {
+      let curX = x + (w - totalCodeWidth) / 2;
+      ctx.textAlign = 'left';
+      for (let i = 0; i < code.length; i++) {
+        ctx.fillText(code[i], curX, y + h / 2 + 0.5);
+        curX += charWidths[i] + extraSpace;
+      }
+      ctx.restore();
+      return;
+    }
+  }
+
+  // Standard center-aligned fallback with native canvas letter spacing if supported
+  ctx.textAlign = 'center';
   try {
-    if (isWidePrint || codeLetterSpacing === 'wide' || codeLetterSpacing === 'wider' || codeLetterSpacing === 'widest') {
+    if (shouldWide) {
       const spacingPx = codeLetterSpacing === 'widest' ? '2.5px' : codeLetterSpacing === 'wider' ? '2.0px' : '1.5px';
       (ctx as any).letterSpacing = spacingPx;
     }

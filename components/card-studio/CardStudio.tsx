@@ -23,7 +23,9 @@ import {
   chunkCards,
   formatRouterOSDate,
   generateSplitRouterOSScripts,
-  downloadBatchZipPackage
+  downloadBatchZipPackage,
+  generateRscScript,
+  downloadRsc
 } from '@/lib/mikrotik-helpers';
 import { copyTextToClipboard } from '@/lib/utils';
 import {
@@ -916,90 +918,9 @@ export const CardStudio: React.FC<CardStudioProps> = ({
     document.body.removeChild(link);
   };
 
-  // MikroTik Script Generator by flavor
+  // MikroTik Script Generator by flavor (Direct Data Binding to in-memory cards without global store query/merge)
   const getMikroTikScript = (flavor: string, cards: Card[], profileName?: string) => {
-    const pName = profileName || (cards[0]?.profileName ? cards[0].profileName.split(' ')[0] : 'default');
-    const cleanProf = resolveRouterOSProfile(pName, 'default');
-
-    if (flavor === 'hotspot_v7') {
-      let script = `# ==========================================================\n`;
-      script += `# NetFlow SaaS - MikroTik RouterOS v7 Resilient Script (/ip hotspot user)\n`;
-      script += `# Total Vouchers: ${cards.length} | Profile: ${cleanProf} | Date: ${formatRouterOSDate()}\n`;
-      script += `# Architecture: High-Performance O(1) Insertion & Zero-Leakage Error Isolation\n`;
-      script += `# ==========================================================\n\n`;
-      cards.forEach(c => {
-        const username = sanitizeRouterOSValue(c.code, 40);
-        const password = sanitizeRouterOSValue(c.password !== undefined && c.password !== '' ? c.password : c.code, 40);
-        const cardProf = resolveRouterOSProfile(c.profileName?.split(' ')[0] || cleanProf, 'default');
-        const limitBytes = formatByteLimit(c.byteDisplay) || '0';
-        const rawUptime = c.uptimeDisplay || '';
-        const limitUptime = formatUptimeLimit(rawUptime);
-        const isUnlimited = !limitUptime || limitUptime === '0' || limitUptime === '0s' || /غير\s*محد[ود]/i.test(rawUptime) || /مفتوح/i.test(rawUptime);
-        const uptimeParam = isUnlimited ? '' : ` limit-uptime=${limitUptime}`;
-        const batchId = sanitizeRouterOSComment(c.batchNumber ? `NetFlow-${c.batchNumber}` : `NetFlow-${cleanProf}`);
-        script += `:do { /ip hotspot user add name="${username}" password="${password}" profile="${cardProf}" limit-bytes-total=${limitBytes}${uptimeParam} server=all comment="${batchId}" } on-error={}\n`;
-      });
-      script += `\n# --- End of Script | Total: ${cards.length} Vouchers Verified | Checksum: OK ---\n`;
-      return script;
-    }
-
-    if (flavor === 'hotspot_v6') {
-      let script = `# ==========================================================\n`;
-      script += `# NetFlow SaaS - MikroTik RouterOS v6 Resilient Script (/ip hotspot user)\n`;
-      script += `# Total Vouchers: ${cards.length} | Profile: ${cleanProf} | Date: ${formatRouterOSDate()}\n`;
-      script += `# Architecture: High-Performance O(1) Insertion & Zero-Leakage Error Isolation\n`;
-      script += `# ==========================================================\n\n`;
-      cards.forEach(c => {
-        const username = sanitizeRouterOSValue(c.code, 40);
-        const password = sanitizeRouterOSValue(c.password !== undefined && c.password !== '' ? c.password : c.code, 40);
-        const cardProf = resolveRouterOSProfile(c.profileName?.split(' ')[0] || cleanProf, 'default');
-        const limitBytes = formatByteLimit(c.byteDisplay) || '0';
-        const rawUptime = c.uptimeDisplay || '';
-        const limitUptime = formatUptimeLimit(rawUptime);
-        const isUnlimited = !limitUptime || limitUptime === '0' || limitUptime === '0s' || /غير\s*محد[ود]/i.test(rawUptime) || /مفتوح/i.test(rawUptime);
-        const uptimeParam = isUnlimited ? '' : ` limit-uptime=${limitUptime}`;
-        const batchId = sanitizeRouterOSComment(c.batchNumber ? `NetFlow-${c.batchNumber}` : `NetFlow-${cleanProf}`);
-        script += `:do { /ip hotspot user add name="${username}" password="${password}" profile="${cardProf}" limit-bytes-total=${limitBytes}${uptimeParam} comment="${batchId}" } on-error={}\n`;
-      });
-      script += `\n# --- End of Script | Total: ${cards.length} Vouchers Verified | Checksum: OK ---\n`;
-      return script;
-    }
-
-    if (flavor === 'userman_v7') {
-      let script = `# ==========================================================\n`;
-      script += `# NetFlow SaaS - MikroTik RouterOS v7 User Manager Script (/user-manager)\n`;
-      script += `# Total Vouchers: ${cards.length} | Profile: ${cleanProf} | Date: ${formatRouterOSDate()}\n`;
-      script += `# ==========================================================\n\n`;
-      cards.forEach(c => {
-        const username = sanitizeRouterOSValue(c.code, 40);
-        const password = sanitizeRouterOSValue(c.password !== undefined && c.password !== '' ? c.password : c.code, 40);
-        const group = resolveRouterOSProfile(cleanProf, 'default');
-        const batchId = sanitizeRouterOSComment(c.batchNumber ? `NetFlow-${c.batchNumber}` : `NetFlow-${cleanProf}`);
-        script += `:do { /user-manager user add name="${username}" password="${password}" group="${group}" comment="${batchId}" } on-error={}\n`;
-      });
-      script += `\n# --- End of Script | Total: ${cards.length} Vouchers Verified | Checksum: OK ---\n`;
-      return script;
-    }
-
-    if (flavor === 'userman_v6') {
-      let script = `# ==========================================================\n`;
-      script += `# NetFlow SaaS - MikroTik RouterOS v6 User Manager Script (/tool user-manager)\n`;
-      script += `# Total Vouchers: ${cards.length} | Profile: ${cleanProf} | Date: ${formatRouterOSDate()}\n`;
-      script += `# ==========================================================\n\n`;
-      cards.forEach(c => {
-        const username = sanitizeRouterOSValue(c.code, 40);
-        const password = sanitizeRouterOSValue(c.password !== undefined && c.password !== '' ? c.password : c.code, 40);
-        const profile = resolveRouterOSProfile(cleanProf, 'default');
-        const batchId = sanitizeRouterOSComment(c.batchNumber ? `NetFlow-${c.batchNumber}` : `NetFlow-${cleanProf}`);
-        script += `:do { /tool user-manager user add username="${username}" password="${password}" customer=admin comment="${batchId}" } on-error={}\n`;
-        script += `:do { /tool user-manager user create-and-activate-profile "${username}" profile="${profile}" customer=admin } on-error={}\n`;
-      });
-      script += `\n# --- End of Script | Total: ${cards.length} Vouchers Verified | Checksum: OK ---\n`;
-      return script;
-    }
-
-    // Default fallback
-    return generateRouterOSTerminalScript(cards, cleanProf);
+    return generateRscScript(cards, profileName, flavor as any);
   };
 
   // Copy MikroTik Script
@@ -1026,25 +947,20 @@ export const CardStudio: React.FC<CardStudioProps> = ({
     }
   };
 
-  // Download .rsc file for MikroTik
+  // Download .rsc file for MikroTik (Direct Data Binding: strictly using in-memory previewBatchData.cards)
   const handleDownloadRsc = () => {
-    if (activeCards.length === 0) {
+    const currentCards = previewBatchData?.cards || activeCards;
+    if (!currentCards || currentCards.length === 0) {
       alert('لا توجد كروت جاهزة للتنزيل!');
       return;
     }
-    const script = getMikroTikScript(scriptFlavor, activeCards, selectedProfile?.name);
-    const blob = new Blob([script], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    const safeProf = selectedProfile?.name ? selectedProfile.name.replace(/[^a-zA-Z0-9_\u0621-\u064A]/g, '_') : 'cards';
-    a.download = `netflow_${safeProf}_${scriptFlavor}.rsc`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    setSuccessMessage(`تم تنزيل ملف أوامر المايكروتك (${scriptFlavor}) بنجاح!`);
-    setTimeout(() => setSuccessMessage(null), 3000);
+    // Direct Data Binding: Takes previewBatchData.cards DIRECTLY from current local generation instance
+    // DO NOT pull, merge, or query existing/old vouchers from global store or persistent database
+    const res = downloadRsc(currentCards, selectedProfile?.name, scriptFlavor);
+    if (res.success) {
+      setSuccessMessage(`تم تنزيل ملف أوامر المايكروتك (${scriptFlavor}) الموحد بعدد ${res.count} كرت بالتمام بنجاح!`);
+      setTimeout(() => setSuccessMessage(null), 3000);
+    }
   };
 
   return (
@@ -1923,22 +1839,14 @@ export const CardStudio: React.FC<CardStudioProps> = ({
                     type="button"
                     onClick={() => {
                       const cleanProf = (savedBatchData.profileName || 'batch').replace(/[^a-zA-Z0-9_\u0621-\u064A]/g, '_');
-                      const fileName = `netflow_${savedBatchData.batch.batchNumber}_${cleanProf}_all_${savedBatchData.quantity}cards.rsc`;
-                      const blob = new Blob([savedBatchData.script], { type: 'text/plain;charset=utf-8' });
-                      const url = URL.createObjectURL(blob);
-                      const a = document.createElement('a');
-                      a.href = url;
-                      a.download = fileName;
-                      document.body.appendChild(a);
-                      a.click();
-                      document.body.removeChild(a);
-                      URL.revokeObjectURL(url);
+                      const fileName = `netflow_${savedBatchData.batch.batchNumber}_${cleanProf}_all_${savedBatchData.cards.length}cards.rsc`;
+                      downloadRsc(savedBatchData.cards, savedBatchData.profileName, scriptFlavor, fileName);
                     }}
                     className="flex items-center justify-center gap-1.5 px-3 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow-md transition transform active:scale-95 cursor-pointer"
                     title="تنزيل الملف الموحد الذي يحتوي على كامل عدد الكروت بالتمام"
                   >
                     <Download className="w-4 h-4" />
-                    <span>تنزيل الملف الموحد ({savedBatchData.quantity} كرت)</span>
+                    <span>تنزيل الملف الموحد ({savedBatchData.cards.length} كرت)</span>
                   </button>
 
                   {/* Complete ZIP Package with Split parts & instructions */}

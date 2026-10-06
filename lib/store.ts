@@ -46,7 +46,8 @@ import {
   subscribeTemplates,
   seedInitialDataIfEmpty,
   DEFAULT_ADMIN_EMAIL,
-  updateBatchQuantityAndCards
+  updateBatchQuantityAndCards,
+  withTimeout
 } from './firestore-service';
 
 export { updateBatchQuantityAndCards } from './firestore-service';
@@ -415,8 +416,8 @@ import { CodeCharSet } from '@/types';
  * توليد رقم عشوائي مشفر وآمن (CSPRNG) غير قابل للتخمين
  * يعتمد على globalThis.crypto.getRandomValues بدلاً من Math.random
  */
-function getSecureRandomInt(max: number): number {
-  if (typeof globalThis !== 'undefined' && globalThis.crypto && globalThis.crypto.getRandomValues) {
+export function getCryptoRandomInt(max: number): number {
+  if (typeof globalThis !== 'undefined' && globalThis.crypto?.getRandomValues) {
     const buffer = new Uint32Array(1);
     globalThis.crypto.getRandomValues(buffer);
     return buffer[0] % max;
@@ -424,84 +425,27 @@ function getSecureRandomInt(max: number): number {
   return Math.floor(Math.random() * max);
 }
 
-/**
- * فحص الأنماط السهلة والتخمينية (Anti-Guessing Pattern Filter)
- * يستبعد الأنماط التافهة أو المتتابعة:
- * 1. الأرقام المتطابقة كلياً (مثل 111111 أو 777777)
- * 2. تكرار أكثر من رقمين متتاليين متطابقين (مثل 111 أو 999)
- * 3. الأرقام المتسلسلة تصاعدياً أو تنازلياً (مثل 123456 أو 987654 أو 345 أو 654)
- * 4. التكرار الثنائي الدوري (مثل 121212 أو 505050)
- * 5. التكرار الثلاثي الدوري (مثل 123123 أو 456456)
- * 6. ضعف التنوع الرقمي (Low Entropy)
- */
-function isPredictableCode(codeStr: string, isDigitsOnly: boolean): boolean {
-  if (!codeStr || codeStr.length < 3) return false;
+// Alias for backwards compatibility
+export const getSecureRandomInt = getCryptoRandomInt;
 
-  // 1. جميع الخانات متطابقة تماماً
-  const firstChar = codeStr[0];
-  if (codeStr.split('').every(ch => ch === firstChar)) {
-    return true;
+export function getCryptoRandomHex(bytes: number = 4): string {
+  if (typeof globalThis !== 'undefined' && globalThis.crypto?.getRandomValues) {
+    const arr = new Uint8Array(bytes);
+    globalThis.crypto.getRandomValues(arr);
+    return Array.from(arr, b => b.toString(16).padStart(2, '0')).join('');
   }
-
-  // 2. يحتوي على 3 خانات متطابقة متتالية (مثل 111 أو 999)
-  if (/(.)\1\1/.test(codeStr)) {
-    return true;
-  }
-
-  // 3. فحص التسلسلات والأنماط للأرقام
-  if (isDigitsOnly) {
-    // استبعاد أي 3 أرقام متسلسلة تصاعدياً أو تنازلياً (مثل 123 أو 321)
-    for (let i = 0; i < codeStr.length - 2; i++) {
-      const d1 = codeStr.charCodeAt(i);
-      const d2 = codeStr.charCodeAt(i + 1);
-      const d3 = codeStr.charCodeAt(i + 2);
-      if ((d2 === d1 + 1 && d3 === d2 + 1) || (d2 === d1 - 1 && d3 === d2 - 1)) {
-        return true;
-      }
-    }
-
-    // استبعاد النمط الثنائي المكرر (مثل 121212 أو 505050)
-    if (codeStr.length >= 4) {
-      const p2 = codeStr.slice(0, 2);
-      if (codeStr.slice(2, 4) === p2 && (codeStr.length < 6 || codeStr.slice(4, 6) === p2)) {
-        return true;
-      }
-    }
-
-    // استبعاد النمط الثلاثي المكرر (مثل 123123 أو 456456)
-    if (codeStr.length >= 6) {
-      const p3 = codeStr.slice(0, 3);
-      if (codeStr.slice(3, 6) === p3) {
-        return true;
-      }
-    }
-
-    // استبعاد الأرقام ذات التنوع الضعيف (أقل من 4 أرقام مميزة لكود من 6 خانات)
-    const uniqueChars = new Set(codeStr.split('')).size;
-    const minUnique = codeStr.length >= 6 ? 4 : Math.min(3, codeStr.length);
-    if (uniqueChars < minUnique) {
-      return true;
-    }
-  }
-
-  return false;
+  return Math.random().toString(36).substring(2, 2 + bytes * 2);
 }
 
 /**
- * دالة توليد أكواد الكروت غير القابلة للتخمين
- * - توليد عشوائي مشفر CSPRNG
- * - استبعاد الصفر في بداية الرقم لمنع مشاكل الحذف في الجداول وقواعد البيانات
- * - تصفية صارمة ضد الأرقام المتتابعة أو السهلة
- * - استبعاد الحروف الملتبسة في النمط الأبجدي (مثل 0 و O و 1 و I)
+ * بناء خانات الكود عشوائياً باستخدام التشفير الإحصائي الصرف (CSPRNG)
+ * بناء كل خانة باستقلالية تامة
  */
-export function generateVoucherCode(
-  length: number = 6, 
-  prefix: string = '', 
+export function generateCryptoCodeCandidate(
+  length: number,
   charSet: CodeCharSet = 'digits_only'
 ): string {
-  const effectiveLength = Math.max(3, Math.min(20, length));
   const isDigits = charSet === 'digits_only';
-
   let chars = '0123456789';
   if (charSet === 'alphanumeric_upper') {
     chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
@@ -511,30 +455,108 @@ export function generateVoucherCode(
     chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
   }
 
+  const nonZeroDigits = '123456789';
+  const buffer = new Uint32Array(length);
+  if (typeof globalThis !== 'undefined' && globalThis.crypto?.getRandomValues) {
+    globalThis.crypto.getRandomValues(buffer);
+  } else {
+    for (let i = 0; i < length; i++) {
+      buffer[i] = Math.floor(Math.random() * 0xffffffff);
+    }
+  }
+
+  let result = '';
+  for (let i = 0; i < length; i++) {
+    if (isDigits && i === 0) {
+      result += nonZeroDigits.charAt(buffer[i] % nonZeroDigits.length);
+    } else {
+      result += chars.charAt(buffer[i] % chars.length);
+    }
+  }
+  return result;
+}
+
+/**
+ * فحص الأنماط الضعيفة والتخمينية (Anti-Pattern / isWeakCode Validator)
+ * يستبعد الكود ويعيد توليده إذا:
+ * 1. يحتوي على 3 خانات متطابقة متتالية (مثل "777" أو "000")
+ * 2. يحتوي على متواليات حسابية خطية (linear arithmetic progressions مثل +13 أو +1 أو -1)
+ * 3. يشكل تسلسلاً متتالياً من 3 أرقام أو أكثر (مثل "123" أو "876")
+ * 4. يحتوي على كتل متكررة (repeating block patterns مثل "1212" أو "8888" أو "123123")
+ */
+export function isWeakCode(codeStr: string): boolean {
+  if (!codeStr || codeStr.length < 3) return false;
+
+  // 1. فحص 3 خانات متطابقة متتالية (3+ identical consecutive characters)
+  if (/(.)\1\1/.test(codeStr)) {
+    return true;
+  }
+
+  // 2. فحص المتواليات الحسابية الخطية عبر 3 خانات متتالية (Linear arithmetic progressions)
+  // يشمل جميع الخطوات الثابتة (مثل +13, +1, -1, +2, إلخ)
+  for (let i = 0; i <= codeStr.length - 3; i++) {
+    const c1 = codeStr.charCodeAt(i);
+    const c2 = codeStr.charCodeAt(i + 1);
+    const c3 = codeStr.charCodeAt(i + 2);
+    const step1 = c2 - c1;
+    const step2 = c3 - c2;
+    if (step1 === step2) {
+      return true;
+    }
+  }
+
+  // 3. فحص التسلسلات المتتالية لثلاثة أرقام أو أكثر (Sequential run of 3+ digits)
+  for (let i = 0; i <= codeStr.length - 3; i++) {
+    const ch1 = codeStr[i];
+    const ch2 = codeStr[i + 1];
+    const ch3 = codeStr[i + 2];
+    if (/\d/.test(ch1) && /\d/.test(ch2) && /\d/.test(ch3)) {
+      const n1 = ch1.charCodeAt(0);
+      const n2 = ch2.charCodeAt(0);
+      const n3 = ch3.charCodeAt(0);
+      if ((n2 === n1 + 1 && n3 === n2 + 1) || (n2 === n1 - 1 && n3 === n2 - 1)) {
+        return true;
+      }
+    }
+  }
+
+  // 4. فحص الكتل المتكررة (Repeating block patterns مثل 1212 أو 8888 أو 123123)
+  if (/(.{2,})\1/.test(codeStr)) {
+    return true;
+  }
+
+  return false;
+}
+
+// التوافق العكسي مع استدعاءات isPredictableCode
+export const isPredictableCode = (codeStr: string, _isDigitsOnly?: boolean): boolean => isWeakCode(codeStr);
+
+/**
+ * دالة توليد أكواد الكروت غير القابلة للتخمين
+ * - توليد عشوائي مشفر CSPRNG
+ * - استبعاد الصفر في بداية الرقم لمنع مشاكل الحذف في الجداول وقواعد البيانات
+ * - تصفية صارمة ضد الأنماط الحسابية والمتتابعة
+ */
+export function generateVoucherCode(
+  length: number = 6, 
+  prefix: string = '', 
+  charSet: CodeCharSet = 'digits_only'
+): string {
+  const effectiveLength = Math.max(3, Math.min(20, length));
   let candidate = '';
   let attempts = 0;
 
   do {
     attempts++;
-    candidate = '';
-
-    for (let i = 0; i < effectiveLength; i++) {
-      // في حالة الأرقام الصافية، نضمن عدم بدء الرقم بصفر لثبات خانات الكرت
-      if (isDigits && i === 0) {
-        const nonZeroDigits = '123456789';
-        candidate += nonZeroDigits.charAt(getSecureRandomInt(nonZeroDigits.length));
-      } else {
-        candidate += chars.charAt(getSecureRandomInt(chars.length));
-      }
-    }
-  } while (attempts < 100 && isPredictableCode(candidate, isDigits));
+    candidate = generateCryptoCodeCandidate(effectiveLength, charSet);
+  } while (attempts < 50 && isWeakCode(candidate));
 
   return prefix ? `${prefix}${candidate}` : candidate;
 }
 
 /**
  * دالة توليد رمز PIN قوي وغير قابل للتخمين
- * تستبعد الرموز البديهية مثل 0000 أو 1234 أو 2580
+ * تستبعد الرموز البديهية والمتتابعة
  */
 export function generatePinCode(length: number = 4): string {
   const effectiveLength = Math.max(3, Math.min(10, length));
@@ -548,11 +570,8 @@ export function generatePinCode(length: number = 4): string {
 
   do {
     attempts++;
-    pin = '';
-    for (let i = 0; i < effectiveLength; i++) {
-      pin += getSecureRandomInt(10).toString();
-    }
-  } while (attempts < 50 && (obviousPins.has(pin) || isPredictableCode(pin, true)));
+    pin = generateCryptoCodeCandidate(effectiveLength, 'digits_only');
+  } while (attempts < 50 && (obviousPins.has(pin) || isWeakCode(pin)));
 
   return pin;
 }
@@ -831,13 +850,41 @@ export function loadAppState(): AppState {
   }
 }
 
+let saveDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+
 export function saveAppState(state: AppState): void {
   if (typeof window === 'undefined') return;
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  } catch (err) {
-    console.error('Failed to save to localStorage', err);
+
+  if (saveDebounceTimer) {
+    clearTimeout(saveDebounceTimer);
   }
+
+  // Debounce localStorage writes (350ms) to prevent freezing main thread on rapid Firestore snapshots
+  saveDebounceTimer = setTimeout(() => {
+    try {
+      // Safe, lightweight snapshot: exclude heavy embedded card lists from batches & cap offline card count
+      const safeBatches = (state.batches || []).slice(0, 50).map(b => {
+        if (b.cards && Array.isArray(b.cards) && b.cards.length > 0) {
+          const { cards: _omitted, ...cleanBatch } = b as any;
+          return cleanBatch as CardBatch;
+        }
+        return b;
+      });
+
+      const safeState: AppState = {
+        ...state,
+        batches: safeBatches,
+        // Keep at most 100 cards in localStorage for fast offline startup without quota exhaustion
+        cards: (state.cards || []).slice(0, 100),
+        invoices: (state.invoices || []).slice(0, 50),
+        payments: (state.payments || []).slice(0, 50)
+      };
+
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(safeState));
+    } catch (err) {
+      console.warn('LocalStorage save note (safe in-memory store remains authoritative):', err);
+    }
+  }, 350);
 }
 
 let memoryState: AppState | null = null;
@@ -851,6 +898,7 @@ function emitStoreChange() {
 
 let activeUnsubscribers: (() => void)[] = [];
 let isSyncing = false;
+let currentSyncedTenantId: string | null = null;
 
 export const appStore = {
   getSnapshot(): AppState {
@@ -923,21 +971,34 @@ export const appStore = {
       return () => {};
     }
 
-    // Clear any previous listeners before switching/starting
+    // Mutual exclusion: Prevent duplicate concurrent sync execution on the same tenant
+    if (isSyncing) {
+      return () => {};
+    }
+    if (currentSyncedTenantId === tenantId && activeUnsubscribers.length > 0) {
+      return () => {};
+    }
+
+    isSyncing = true;
+    currentSyncedTenantId = tenantId;
+
+    // Clear any previous listeners cleanly before starting
     activeUnsubscribers.forEach(unsub => {
       try { unsub(); } catch { /* ignore */ }
     });
     activeUnsubscribers = [];
 
     try {
-      // 1. Ensure user is authenticated for rules
-      await ensureAuth();
+      // 1. Ensure user is authenticated for rules (with non-blocking timeout)
+      await ensureAuth().catch(() => null);
 
-      // 2. Fetch initial cloud data or seed if new database
+      // 2. Initial cloud data seed check (safeguarded)
       const currentSnap = appStore.getSnapshot();
-      await seedInitialDataIfEmpty(tenantId, currentSnap);
+      await seedInitialDataIfEmpty(tenantId, currentSnap).catch(err => {
+        console.warn('Seed initial data non-critical note:', err);
+      });
 
-      // 3. Fetch tenant, profiles, templates, and entities
+      // 3. Fetch tenant, profiles, templates, and entities with timeouts to prevent hanging on slow network
       const [
         cloudTenant,
         cloudProfiles,
@@ -950,16 +1011,16 @@ export const appStore = {
         cloudDevices,
         cloudTeam
       ] = await Promise.all([
-        fetchTenant(tenantId),
-        fetchProfiles(tenantId),
-        loadTemplatesFromFirestore(tenantId),
-        fetchBatches(tenantId),
-        fetchCards(tenantId),
-        fetchAgents(tenantId),
-        fetchInvoices(tenantId),
-        fetchPayments(tenantId),
-        fetchDevices(tenantId),
-        fetchTeamMembers(tenantId)
+        withTimeout(fetchTenant(tenantId), 6000, null),
+        withTimeout(fetchProfiles(tenantId), 6000, []),
+        withTimeout(loadTemplatesFromFirestore(tenantId), 6000, []),
+        withTimeout(fetchBatches(tenantId), 6000, []),
+        withTimeout(fetchCards(tenantId, 1500), 6000, []),
+        withTimeout(fetchAgents(tenantId), 6000, []),
+        withTimeout(fetchInvoices(tenantId), 6000, []),
+        withTimeout(fetchPayments(tenantId), 6000, []),
+        withTimeout(fetchDevices(tenantId), 6000, []),
+        withTimeout(fetchTeamMembers(tenantId), 6000, [])
       ]);
 
       appStore.update(prev => ({
@@ -1062,11 +1123,16 @@ export const appStore = {
           try { unsub(); } catch { /* ignore */ }
         });
         activeUnsubscribers = [];
+        if (currentSyncedTenantId === tenantId) {
+          currentSyncedTenantId = null;
+        }
       };
     } catch (err) {
       console.warn('Firestore real-time sync note (working in offline resilient mode):', err);
       appStore.update(prev => ({ ...prev, isCloudConnected: false }));
       return () => {};
+    } finally {
+      isSyncing = false;
     }
   }
 };
@@ -1092,9 +1158,9 @@ export function generateBatchCards(
   const globalExistingCodes = new Set<string>(existingCards.map(c => c.code));
 
   // Determine smart sequential batch number
-  let nextBatchIndex = existingBatches.length + 1;
+  const nextBatchIndex = existingBatches.length + 1;
   const batchNum = `B-${String(100 + nextBatchIndex)}`;
-  const batchId = `batch_${Date.now()}_${Math.floor(1000 + Math.random() * 9000)}`;
+  const batchId = `batch_${Date.now()}_${getCryptoRandomInt(9000) + 1000}`;
   const now = new Date().toISOString();
 
   // Support exact requested quantity up to 10,000 cards without artificial truncation
@@ -1112,27 +1178,50 @@ export function generateBatchCards(
     effectiveCodeLength = Math.max(effectiveCodeLength, minLenForQty);
   }
 
-  // Strict generation loop ensuring EXACT targetQuantity is produced
-  let loopCounter = 0;
-  while (generatedCards.length < targetQuantity && loopCounter < targetQuantity * 20) {
-    loopCounter++;
-    const cardIndex = generatedCards.length + 1;
-
+  // Pure cryptographic entropy generation with strict anti-pattern filtering and O(1) Set uniqueness
+  for (let cardIndex = 1; cardIndex <= targetQuantity; cardIndex++) {
     let code = '';
     let attempts = 0;
-    do {
-      attempts++;
-      code = generateVoucherCode(effectiveCodeLength, cleanPrefix, params.codeCharSet || 'digits_only');
-      if (attempts > 20) {
-        // Expand code with a random digit to guarantee immediate uniqueness
-        code = `${code}${getSecureRandomInt(10)}`;
-      }
-    } while ((uniqueCodesInBatch.has(code) || globalExistingCodes.has(code)) && attempts < 80);
+    let accepted = false;
 
-    // Fail-safe uniqueness guarantee
-    if (uniqueCodesInBatch.has(code) || globalExistingCodes.has(code)) {
-      const randTail = Math.floor(1000 + Math.random() * 9000);
-      code = cleanPrefix ? `${cleanPrefix}${cardIndex}${randTail}` : `${cardIndex}${randTail}`;
+    while (attempts < 50) {
+      attempts++;
+      // Dynamically expand entropy length if retries accumulate to guarantee collision avoidance
+      const lenForAttempt = attempts > 25 ? effectiveCodeLength + 1 : effectiveCodeLength;
+      const candidateBody = generateCryptoCodeCandidate(lenForAttempt, params.codeCharSet || 'digits_only');
+
+      // Reject linear arithmetic progressions, 3+ repeating chars, digit runs, or block patterns
+      if (isWeakCode(candidateBody)) {
+        continue;
+      }
+
+      const candidateCode = cleanPrefix ? `${cleanPrefix}${candidateBody}` : candidateBody;
+
+      // O(1) Uniqueness verification against both current batch and global registry
+      if (!uniqueCodesInBatch.has(candidateCode) && !globalExistingCodes.has(candidateCode)) {
+        code = candidateCode;
+        accepted = true;
+        break;
+      }
+    }
+
+    // High-entropy fallback guaranteeing exact requested quantity without linear sequences
+    if (!accepted) {
+      for (let fallbackAttempt = 0; fallbackAttempt < 30; fallbackAttempt++) {
+        const extraEntropy = generateCryptoCodeCandidate(effectiveCodeLength + 2, params.codeCharSet || 'digits_only');
+        if (!isWeakCode(extraEntropy)) {
+          const candidateCode = cleanPrefix ? `${cleanPrefix}${extraEntropy}` : extraEntropy;
+          if (!uniqueCodesInBatch.has(candidateCode) && !globalExistingCodes.has(candidateCode)) {
+            code = candidateCode;
+            accepted = true;
+            break;
+          }
+        }
+      }
+      if (!accepted) {
+        const hexEntropy = getCryptoRandomHex(4);
+        code = cleanPrefix ? `${cleanPrefix}${hexEntropy}` : hexEntropy;
+      }
     }
 
     uniqueCodesInBatch.add(code);
@@ -1150,7 +1239,7 @@ export function generateBatchCards(
     qr = qr.replace('{domain}', domain).replace('{code}', code).replace('{password}', password);
 
     const card: Card = {
-      id: `card_${batchId}_${cardIndex}_${Math.random().toString(36).substring(2, 6)}`,
+      id: `card_${batchId}_${cardIndex}_${getCryptoRandomHex(3)}`,
       tenantId: params.tenant?.id || 'tenant_main_01',
       batchId,
       batchNumber: batchNum,
@@ -1217,7 +1306,9 @@ import {
   generateRouterOSTerminalScript,
   formatRouterOSDate,
   generateSplitRouterOSScripts,
-  downloadBatchZipPackage
+  downloadBatchZipPackage,
+  generateRscScript,
+  downloadRsc
 } from './mikrotik-helpers';
 
 export {
@@ -1231,7 +1322,9 @@ export {
   generateRouterOSTerminalScript,
   formatRouterOSDate,
   generateSplitRouterOSScripts,
-  downloadBatchZipPackage
+  downloadBatchZipPackage,
+  generateRscScript,
+  downloadRsc
 };
 
 

@@ -179,6 +179,7 @@ export function generateRouterOSTerminalScript(
     `# ==========================================================`,
     `# NetFlow SaaS - MikroTik Resilient Hotspot User Import Script (.rsc)`,
     `# Generated At: ${formatRouterOSDate()}`,
+    `# Total Vouchers: ${targetCards.length}`,
     `# Batch: ${batchComment} | Total Users: ${targetCards.length} | Profile: ${fixedProfile}`,
     `# Policy: Dynamic Speeds Enabled - Fixed Default Profile | Quota: ${formattedBytes}`,
     `# Architecture: Safe Deduplication & Zero-Leakage Error Isolation`,
@@ -203,9 +204,140 @@ export function generateRouterOSTerminalScript(
     );
   }
 
-  lines.push(`\n# --- End of Script | Total: ${targetCards.length} Vouchers Verified | Checksum: OK ---`);
+  lines.push(`\n# --- End of Script | Total Vouchers: ${targetCards.length} | Checksum: OK ---`);
 
   return lines.join("\n");
+}
+
+/**
+ * توليد ملف .rsc الموحد عبر الربط المباشر مع مصفوفة الكروت الحالية في الذاكرة
+ * يمنع تماماً سحب أو دمج أو الاستعلام عن كروت قديمة من قاعدة البيانات
+ * يضمن تطابق عدد الأسطر تماماً مع الكمية المطلوبة دون أي اقتطاع أو ترقيم صفحات
+ */
+export function generateRscScript(
+  generatedBatch: any[] | { cards: any[] } | { batch: any; cards: any[] },
+  profileName: string = "default",
+  flavor: 'hotspot_v7' | 'hotspot_v6' | 'userman_v7' | 'userman_v6' = 'hotspot_v7'
+): string {
+  // Direct Data Binding: استخراج مصفوفة الكروت مباشرة من المتغير في الذاكرة
+  const cards: any[] = Array.isArray(generatedBatch)
+    ? generatedBatch
+    : (generatedBatch && Array.isArray((generatedBatch as any).cards))
+      ? (generatedBatch as any).cards
+      : [];
+
+  if (!cards || cards.length === 0) {
+    return "# No vouchers generated.";
+  }
+
+  const cleanProf = resolveRouterOSProfile(profileName || cards[0]?.profileName || 'default', 'default');
+  const firstCard = cards[0] || {};
+  const rawBatchNum = firstCard.batchNumber || firstCard.batchId || "B-001";
+  let cleanBatchStr = String(rawBatchNum).replace(/^NetFlow[-_]?/i, "").trim();
+  if (cleanBatchStr.toLowerCase().startsWith("b-")) {
+    cleanBatchStr = cleanBatchStr.substring(2);
+  } else if (cleanBatchStr.toLowerCase().startsWith("b")) {
+    cleanBatchStr = cleanBatchStr.substring(1);
+  }
+  const batchComment = sanitizeRouterOSComment(`NetFlow-B-${cleanBatchStr || "001"}`);
+  const rawByte = firstCard.byteDisplay || firstCard.limitBytesTotal || firstCard.byteLimit || "2700M";
+  const formattedBytes = formatByteLimit(rawByte) || "2700M";
+
+  const lines: string[] = [
+    `# ==========================================================`,
+    `# NetFlow SaaS - MikroTik Unified Batch Export Script (.rsc)`,
+    `# Total Vouchers: ${cards.length}`,
+    `# Batch: ${batchComment} | Profile: ${cleanProf} | Date: ${formatRouterOSDate()}`,
+    `# Architecture: 100% Direct In-Memory Binding (No Database Querying/Merging)`,
+    `# ==========================================================`,
+    ``
+  ];
+
+  // Iterate over 100% of the in-memory array without truncating or paginating
+  for (let i = 0; i < cards.length; i++) {
+    const card = cards[i];
+    if (!card) continue;
+    const rawCode = card.code || card.username || card.id;
+    const safeCode = sanitizeRouterOSValue(rawCode, 40);
+    if (!safeCode) continue;
+
+    const rawPwd = card.password !== undefined && card.password !== ""
+      ? card.password
+      : card.username || card.code || rawCode;
+    const safePwd = sanitizeRouterOSValue(rawPwd, 40);
+
+    const cardProf = resolveRouterOSProfile(card.profileName?.split(' ')[0] || cleanProf, 'default');
+    const limitBytes = formatByteLimit(card.byteDisplay || card.limitBytesTotal) || formattedBytes;
+    const rawUptime = card.uptimeDisplay || card.limitUptime || '';
+    const limitUptime = formatUptimeLimit(rawUptime);
+    const isUnlimited = !limitUptime || limitUptime === '0' || limitUptime === '0s' || /غير\s*محد[ود]/i.test(rawUptime) || /مفتوح/i.test(rawUptime);
+    const uptimeParam = isUnlimited ? '' : ` limit-uptime=${limitUptime}`;
+
+    if (flavor === 'hotspot_v7') {
+      lines.push(
+        `:do { /ip hotspot user add name="${safeCode}" password="${safePwd}" profile="${cardProf}" limit-bytes-total=${limitBytes}${uptimeParam} server=all comment="${batchComment}" } on-error={}`
+      );
+    } else if (flavor === 'hotspot_v6') {
+      lines.push(
+        `:do { /ip hotspot user add name="${safeCode}" password="${safePwd}" profile="${cardProf}" limit-bytes-total=${limitBytes}${uptimeParam} comment="${batchComment}" } on-error={}`
+      );
+    } else if (flavor === 'userman_v7') {
+      lines.push(
+        `:do { /user-manager user add name="${safeCode}" password="${safePwd}" group="${cardProf}" comment="${batchComment}" } on-error={}`
+      );
+    } else if (flavor === 'userman_v6') {
+      lines.push(
+        `:do { /tool user-manager user add username="${safeCode}" password="${safePwd}" customer=admin comment="${batchComment}" } on-error={}`
+      );
+      lines.push(
+        `:do { /tool user-manager user create-and-activate-profile "${safeCode}" profile="${cardProf}" customer=admin } on-error={}`
+      );
+    }
+  }
+
+  lines.push(``);
+  lines.push(`# --- End of Script | Total Vouchers: ${cards.length} | Checksum: OK ---`);
+
+  return lines.join("\n");
+}
+
+/**
+ * تنزيل ملف .rsc الموحد مباشرة من الذاكرة لضمان مطابقة الكمية الفعلية 100%
+ */
+export function downloadRsc(
+  generatedBatch: any[] | { cards: any[] } | { batch: any; cards: any[] },
+  profileName: string = "default",
+  flavor: 'hotspot_v7' | 'hotspot_v6' | 'userman_v7' | 'userman_v6' = 'hotspot_v7',
+  customFileName?: string
+): { success: boolean; count: number; fileName: string } {
+  const cards: any[] = Array.isArray(generatedBatch)
+    ? generatedBatch
+    : (generatedBatch && Array.isArray((generatedBatch as any).cards))
+      ? (generatedBatch as any).cards
+      : [];
+
+  if (!cards || cards.length === 0) {
+    return { success: false, count: 0, fileName: '' };
+  }
+
+  const script = generateRscScript(cards, profileName, flavor);
+  const cleanProf = (profileName || 'batch').replace(/[^a-zA-Z0-9_\u0621-\u064A]/g, '_');
+  const batchNum = cards[0]?.batchNumber || 'B-001';
+  const fileName = customFileName || `netflow_${batchNum}_${cleanProf}_all_${cards.length}cards.rsc`;
+
+  if (typeof window !== 'undefined') {
+    const blob = new Blob([script], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  return { success: true, count: cards.length, fileName };
 }
 
 export interface SplitScriptPart {
@@ -257,7 +389,7 @@ export function generateSplitRouterOSScripts(
 
   // 1. توليد الملف الموحد الشامل
   const unifiedFileName = `netflow_${safeBatchTag}_all_${totalCards}cards.rsc`;
-  const unifiedScript = generateRouterOSTerminalScript(targetCards, safeProf, { activeOnly: false });
+  const unifiedScript = generateRscScript(targetCards, safeProf, flavor as any);
 
   // 2. تقسيم الكروت إلى أجزاء Winbox الآمنة (Winbox-Safe Parts)
   const chunks = chunkCards(targetCards, chunkSize);

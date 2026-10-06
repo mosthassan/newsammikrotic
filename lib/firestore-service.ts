@@ -233,6 +233,25 @@ function sanitizeForFirestore<T>(obj: T): T {
   return JSON.parse(JSON.stringify(obj));
 }
 
+// Resilient promise timeout helper to guarantee zero-latency fallback during poor connection
+export function withTimeout<T>(promise: Promise<T>, timeoutMs: number = 6000, fallback: T): Promise<T> {
+  let timer: any;
+  const timeoutPromise = new Promise<T>((resolve) => {
+    timer = setTimeout(() => resolve(fallback), timeoutMs);
+  });
+  return Promise.race([
+    promise.then(res => {
+      clearTimeout(timer);
+      return res;
+    }).catch(err => {
+      clearTimeout(timer);
+      console.warn('Firestore operation handled error with fallback:', err?.message || err);
+      return fallback;
+    }),
+    timeoutPromise
+  ]);
+}
+
 // ==========================================
 // 0. User Profile & RBAC
 // ==========================================

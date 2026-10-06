@@ -738,13 +738,21 @@ export const StudioControlPanel: React.FC<StudioControlPanelProps> = ({
                     min={1}
                     max={10000}
                     step={1}
-                    value={quantity}
+                    value={quantity === 0 ? '' : quantity}
                     onChange={e => {
-                      const val = parseInt(e.target.value);
-                      if (!isNaN(val) && val >= 1) {
-                        setQuantity(Math.min(10000, val));
-                      } else if (e.target.value === '') {
-                        setQuantity(1);
+                      const str = e.target.value.trim();
+                      if (str === '') {
+                        setQuantity(0);
+                      } else {
+                        const val = parseInt(str, 10);
+                        if (!isNaN(val)) {
+                          setQuantity(Math.max(1, Math.min(10000, val)));
+                        }
+                      }
+                    }}
+                    onBlur={() => {
+                      if (!quantity || quantity < 1) {
+                        setQuantity(24);
                       }
                     }}
                     className="w-full bg-transparent border-0 text-center font-mono font-black text-2xl text-sky-300 focus:outline-none focus:ring-0"

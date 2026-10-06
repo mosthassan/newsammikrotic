@@ -159,9 +159,6 @@ export default function Home() {
               ownerUid: firebaseUser.uid
             }
           }));
-
-          // Trigger cloud synchronization for this tenant
-          appStore.initFirestoreSync(targetTenantId);
         } catch (err) {
           console.warn('Auth auto-restore note:', err);
         }
