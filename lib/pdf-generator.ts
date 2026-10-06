@@ -973,6 +973,42 @@ export async function generateCardsPdf(
           ctx.restore();
         }
 
+        // Brand Icon / Signature System (💥)
+        if (template.brandIconEnabled) {
+          const brandText = template.brandIconContent || '💥';
+          const p = getCustomPos('brandIcon');
+          const brandSizePx = Math.round(Math.max(3, (p.fontSize || template.brandIconSize || 16) * 0.42) * dpiScale * autoScale);
+          const brandOpacity = (template.brandIconOpacity ?? 100) / 100;
+          const posPreset = template.brandIconPosition || 'top_right';
+
+          ctx.save();
+          ctx.globalAlpha = brandOpacity;
+          ctx.font = `${brandSizePx}px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", ${fontStack}`;
+          ctx.textBaseline = 'middle';
+
+          if (template.positions?.brandIcon) {
+            const posX = cardX + cardW - ((p.x ?? 5) / 100) * cardW;
+            const posY = cardY + ((p.y ?? 5) / 100) * cardH;
+            ctx.textAlign = 'center';
+            ctx.fillText(brandText, posX, posY);
+          } else {
+            if (posPreset === 'top_right') {
+              ctx.textAlign = 'right';
+              ctx.fillText(brandText, cardX + cardW - 3 * dpiScale * autoScale, cardY + 3.8 * dpiScale * autoScale);
+            } else if (posPreset === 'top_left') {
+              ctx.textAlign = 'left';
+              ctx.fillText(brandText, cardX + 3 * dpiScale * autoScale, cardY + 3.8 * dpiScale * autoScale);
+            } else if (posPreset === 'next_to_price') {
+              ctx.textAlign = 'right';
+              ctx.fillText(brandText, cardX + cardW - 22 * dpiScale * autoScale, cardY + 3.8 * dpiScale * autoScale);
+            } else if (posPreset === 'footer') {
+              ctx.textAlign = 'center';
+              ctx.fillText(brandText, cardX + cardW * 0.15, cardY + cardH - 3 * dpiScale * autoScale);
+            }
+          }
+          ctx.restore();
+        }
+
       } else {
         const isCompactStrip = (cardH / dpiScale) <= 22;
 
@@ -1005,6 +1041,19 @@ export async function generateCardsPdf(
             ctx.fillStyle = template.networkNameColor || (isDarkCard ? '#ffffff' : '#0f172a');
             ctx.font = `800 ${Math.round(2.6 * dpiScale * autoScale)}px ${fontStack}`;
             ctx.fillText(tenant.businessName, rightX, rightY + 2.5 * dpiScale * autoScale, rightW);
+            ctx.restore();
+          }
+
+          if (template.brandIconEnabled) {
+            const brandText = template.brandIconContent || '💥';
+            const brandSizePx = Math.round(Math.max(2.5, (template.brandIconSize || 13) * 0.35) * dpiScale * autoScale);
+            const brandOpacity = (template.brandIconOpacity ?? 100) / 100;
+            ctx.save();
+            ctx.globalAlpha = brandOpacity;
+            ctx.font = `${brandSizePx}px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", ${fontStack}`;
+            ctx.textBaseline = 'middle';
+            ctx.textAlign = 'right';
+            ctx.fillText(brandText, rightX - rightW + 2 * dpiScale * autoScale, rightY + 2.5 * dpiScale * autoScale);
             ctx.restore();
           }
 
@@ -1095,11 +1144,44 @@ export async function generateCardsPdf(
           const innerRight = cardX + cardW - (isDense ? 1.8 : 2.6) * dpiScale * autoScale;
           const topY = cardY + topPadding;
 
+          // Brand Icon / Signature System (💥)
+          const brandText = template.brandIconContent || '💥';
+          const brandSizePx = Math.round(Math.max(3.0, (template.brandIconSize || 16) * 0.42) * dpiScale * autoScale);
+          const brandOpacity = (template.brandIconOpacity ?? 100) / 100;
+          const posPreset = template.brandIconPosition || 'top_right';
+
+          if (template.brandIconEnabled) {
+            ctx.save();
+            ctx.globalAlpha = brandOpacity;
+            ctx.font = `${brandSizePx}px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", ${fontStack}`;
+            ctx.textBaseline = 'middle';
+
+            if (posPreset === 'top_right') {
+              ctx.textAlign = 'right';
+              ctx.fillText(brandText, innerRight, topY + 3.2 * dpiScale * autoScale);
+            } else if (posPreset === 'top_left') {
+              ctx.textAlign = 'left';
+              ctx.fillText(brandText, innerLeft, topY + 3.2 * dpiScale * autoScale);
+            } else if (posPreset === 'next_to_price') {
+              ctx.textAlign = 'left';
+              const badgeW = (isDense ? 16 : 20) * dpiScale * autoScale;
+              const posX = innerLeft + badgeW + 1.8 * dpiScale * autoScale;
+              ctx.fillText(brandText, posX, topY + ((isDense ? 5.2 : 6.2) * dpiScale * autoScale) / 2);
+            } else if (posPreset === 'footer') {
+              ctx.textAlign = 'left';
+              ctx.fillText(brandText, cardX + 3.0 * dpiScale * autoScale, cardY + cardH - 2.2 * dpiScale * autoScale);
+            }
+            ctx.restore();
+          }
+
           // Price Badge (Top Left in RTL)
           if (template.showPrice) {
             const badgeW = (isDense ? 16 : 20) * dpiScale * autoScale;
             const badgeH = (isDense ? 5.2 : 6.2) * dpiScale * autoScale;
-            const badgeX = innerLeft;
+            let badgeX = innerLeft;
+            if (template.brandIconEnabled && posPreset === 'top_left') {
+              badgeX += brandSizePx * 1.25;
+            }
             const badgeY = topY;
             const currencyText = tenant.currency === 'YER' ? 'ر.ي' : tenant.currency;
 
@@ -1127,7 +1209,10 @@ export async function generateCardsPdf(
             ctx.fillStyle = template.networkNameColor || (isDarkCard ? '#ffffff' : '#0f172a');
             const fontPx = Math.round(Math.max(3.2, (template.fontSizeTitle || 11) * 0.38) * dpiScale * autoScale);
             ctx.font = `800 ${fontPx}px ${fontStack}`;
-            const titleX = innerRight;
+            let titleX = innerRight;
+            if (template.brandIconEnabled && posPreset === 'top_right') {
+              titleX -= brandSizePx * 1.25;
+            }
             const titleY = topY + 3.2 * dpiScale * autoScale;
             if (template.showIcons !== false) {
               const iconSize = fontPx * 0.85;

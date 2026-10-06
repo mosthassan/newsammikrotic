@@ -230,6 +230,7 @@ export const StudioControlPanel: React.FC<StudioControlPanelProps> = ({
     { key: 'code', label: 'كود الدخول (Code)', icon: Hash },
     { key: 'pin', label: 'الرمز السري (PIN)', icon: KeyRound },
     { key: 'networkName', label: 'اسم الشبكة', icon: Wifi },
+    { key: 'brandIcon', label: 'شعار الشبكة (💥)', icon: Sparkles },
     { key: 'price', label: 'شارة السعر', icon: Tag },
     { key: 'qr', label: 'رمز الاستجابة (QR)', icon: QrCode },
     { key: 'profileName', label: 'اسم الباقة / الفئة', icon: Sparkles },
@@ -246,6 +247,7 @@ export const StudioControlPanel: React.FC<StudioControlPanelProps> = ({
       case 'code': return currentTemplate.showCode !== false;
       case 'pin': return currentTemplate.showPin !== false;
       case 'networkName': return currentTemplate.showNetworkName !== false;
+      case 'brandIcon': return currentTemplate.brandIconEnabled === true;
       case 'price': return currentTemplate.showPrice !== false;
       case 'qr': return currentTemplate.showQr !== false;
       case 'profileName': return currentTemplate.showProfileName !== false;
@@ -265,6 +267,15 @@ export const StudioControlPanel: React.FC<StudioControlPanelProps> = ({
       case 'code': handleUpdateTemplate({ showCode: !current }); break;
       case 'pin': handleUpdateTemplate({ showPin: !current }); break;
       case 'networkName': handleUpdateTemplate({ showNetworkName: !current }); break;
+      case 'brandIcon':
+        handleUpdateTemplate({
+          brandIconEnabled: !current,
+          brandIconContent: currentTemplate.brandIconContent || '💥',
+          brandIconPosition: currentTemplate.brandIconPosition || 'top_right',
+          brandIconSize: currentTemplate.brandIconSize || 16,
+          brandIconOpacity: currentTemplate.brandIconOpacity ?? 100
+        });
+        break;
       case 'price': handleUpdateTemplate({ showPrice: !current }); break;
       case 'qr': handleUpdateTemplate({ showQr: !current }); break;
       case 'profileName': handleUpdateTemplate({ showProfileName: !current }); break;
@@ -2157,6 +2168,86 @@ export const StudioControlPanel: React.FC<StudioControlPanelProps> = ({
                     </div>
                   )}
 
+                  {/* 5. Specific Custom Content Editor for Brand Icon */}
+                  {inspectorElement === 'brandIcon' && (
+                    <div className="space-y-2 p-2.5 bg-slate-950/80 rounded-xl border border-amber-500/30">
+                      <div className="flex items-center justify-between">
+                        <label className="text-[11px] font-bold text-amber-300 flex items-center gap-1">
+                          <Sparkles className="w-3 h-3" />
+                          <span>رمز أو نص شعار الشبكة (Brand Icon):</span>
+                        </label>
+                        <span className="text-[10px] text-slate-400 font-mono">الافتراضي: 💥</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={currentTemplate.brandIconContent !== undefined ? currentTemplate.brandIconContent : '💥'}
+                          onChange={e => handleUpdateTemplate({ brandIconContent: e.target.value, brandIconEnabled: true })}
+                          placeholder="💥 أو أي رمز/نص"
+                          className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-100"
+                        />
+                        <div className="w-8 h-8 rounded-lg bg-slate-900 border border-slate-700 flex items-center justify-center text-base shrink-0">
+                          {currentTemplate.brandIconContent || '💥'}
+                        </div>
+                      </div>
+                      <div className="flex flex-wrap gap-1 pt-0.5">
+                        {['💥', '⚡', '🌐', '🚀', '👑', '🔥', '📶', '💎', '🛡️', '⭐'].map(emoji => (
+                          <button
+                            key={emoji}
+                            type="button"
+                            onClick={() => handleUpdateTemplate({ brandIconContent: emoji, brandIconEnabled: true })}
+                            className={`w-6 h-6 rounded text-xs flex items-center justify-center transition border ${
+                              (currentTemplate.brandIconContent || '💥') === emoji
+                                ? 'bg-amber-500/20 border-amber-500 text-white'
+                                : 'bg-slate-900 border-slate-800 text-slate-300'
+                            }`}
+                          >
+                            {emoji}
+                          </button>
+                        ))}
+                      </div>
+                      <div className="pt-1.5 border-t border-slate-800/80">
+                        <label className="text-[10.5px] text-slate-300 font-semibold block mb-1">موضع ومكان الشعار:</label>
+                        <div className="grid grid-cols-2 gap-1 text-[10px]">
+                          {[
+                            { id: 'top_right', label: 'أعلى اليمين' },
+                            { id: 'top_left', label: 'أعلى اليسار' },
+                            { id: 'next_to_price', label: 'بجانب السعر' },
+                            { id: 'footer', label: 'أسفل الكرت' }
+                          ].map(pos => (
+                            <button
+                              key={pos.id}
+                              type="button"
+                              onClick={() => handleUpdateTemplate({ brandIconPosition: pos.id, brandIconEnabled: true })}
+                              className={`py-1 px-1.5 rounded border transition text-center ${
+                                (currentTemplate.brandIconPosition || 'top_right') === pos.id
+                                  ? 'bg-amber-500/20 border-amber-500 text-amber-200 font-bold'
+                                  : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200'
+                              }`}
+                            >
+                              {pos.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="pt-1.5 border-t border-slate-800/80 space-y-1">
+                        <div className="flex items-center justify-between text-[10.5px]">
+                          <span className="text-slate-300">الشفافية:</span>
+                          <span className="font-mono text-amber-400 font-bold">{currentTemplate.brandIconOpacity ?? 100}%</span>
+                        </div>
+                        <input
+                          type="range"
+                          min={10}
+                          max={100}
+                          step={5}
+                          value={currentTemplate.brandIconOpacity ?? 100}
+                          onChange={e => handleUpdateTemplate({ brandIconOpacity: parseInt(e.target.value, 10) || 100, brandIconEnabled: true })}
+                          className="w-full accent-amber-500 h-1.5 bg-slate-800 rounded-lg cursor-pointer"
+                        />
+                      </div>
+                    </div>
+                  )}
+
                   {/* Horizontal X Slider */}
                   <div className="space-y-1">
                     <div className="flex items-center justify-between text-[11px]">
@@ -2346,6 +2437,199 @@ export const StudioControlPanel: React.FC<StudioControlPanelProps> = ({
               />
               <span className="text-slate-200">شريط التذييل (العبارة)</span>
             </label>
+
+            <label className="flex items-center gap-2 p-2.5 bg-slate-950 rounded-xl border border-amber-500/30 cursor-pointer hover:border-amber-500/60 bg-amber-950/10">
+              <input
+                type="checkbox"
+                checked={currentTemplate.brandIconEnabled === true}
+                onChange={e => handleUpdateTemplate({
+                  brandIconEnabled: e.target.checked,
+                  brandIconContent: currentTemplate.brandIconContent || '💥',
+                  brandIconPosition: currentTemplate.brandIconPosition || 'top_right',
+                  brandIconSize: currentTemplate.brandIconSize || 16,
+                  brandIconOpacity: currentTemplate.brandIconOpacity ?? 100
+                })}
+                className="accent-amber-500 rounded w-4 h-4"
+              />
+              <span className="text-amber-200 font-bold">إظهار شعار الشبكة (💥)</span>
+            </label>
+          </div>
+
+          {/* DEDICATED BRAND ICON / SIGNATURE SYSTEM (💥) */}
+          <div className="bg-slate-950/95 border border-amber-500/40 rounded-2xl p-4 space-y-3.5 shadow-xl">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-lg text-amber-300 shadow-sm">
+                  {currentTemplate.brandIconContent || '💥'}
+                </div>
+                <div>
+                  <label htmlFor="brand-icon-sidebar-toggle" className="text-xs font-bold text-white flex items-center gap-1.5 cursor-pointer">
+                    <span>إظهار شعار الشبكة (💥)</span>
+                    <span className="text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-1.5 py-0.2 rounded-full font-sans">
+                      Brand Signature
+                    </span>
+                  </label>
+                  <p className="text-[10.5px] text-slate-400">
+                    رمز أو توقيع مميز للشبكة يظهر بوضوح في معاينة الكروت وطباعة A4
+                  </p>
+                </div>
+              </div>
+
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  id="brand-icon-sidebar-toggle"
+                  type="checkbox"
+                  checked={currentTemplate.brandIconEnabled === true}
+                  onChange={e => handleUpdateTemplate({
+                    brandIconEnabled: e.target.checked,
+                    brandIconContent: currentTemplate.brandIconContent || '💥',
+                    brandIconPosition: currentTemplate.brandIconPosition || 'top_right',
+                    brandIconSize: currentTemplate.brandIconSize || 16,
+                    brandIconOpacity: currentTemplate.brandIconOpacity ?? 100
+                  })}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:right-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+              </label>
+            </div>
+
+            {currentTemplate.brandIconEnabled && (
+              <div className="pt-2 border-t border-slate-800 space-y-3.5 animate-in fade-in duration-200">
+                {/* 1. Custom Text / Emoji Field */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-bold text-amber-300 flex items-center gap-1">
+                      <span>تخصيص نص أو رمز الشعار (Text / Emoji):</span>
+                    </label>
+                    <span className="text-[10px] text-slate-400 font-mono">الافتراضي: 💥</span>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      id="brand-icon-text-input"
+                      value={currentTemplate.brandIconContent !== undefined ? currentTemplate.brandIconContent : '💥'}
+                      onChange={e => handleUpdateTemplate({ brandIconContent: e.target.value })}
+                      placeholder="💥 أو أي رمز أو نص تعبيري"
+                      className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-amber-500 transition shadow-inner font-sans"
+                    />
+                    <div className="w-10 h-10 rounded-xl bg-slate-900 border-2 border-amber-500/40 flex items-center justify-center text-xl shrink-0 shadow-md">
+                      {currentTemplate.brandIconContent || '💥'}
+                    </div>
+                  </div>
+
+                  {/* 1-Click Quick Signature Emoji Chips */}
+                  <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                    <span className="text-[10px] text-slate-400 w-full font-medium">رموز جاهزة سريعة بنقرة واحدة:</span>
+                    {['💥', '⚡', '🌐', '🚀', '👑', '🔥', '📶', '💎', '🛡️', '⭐', '✨', '🏆'].map(emoji => (
+                      <button
+                        key={emoji}
+                        type="button"
+                        onClick={() => handleUpdateTemplate({ brandIconContent: emoji })}
+                        className={`w-8 h-8 rounded-xl text-base flex items-center justify-center transition border ${
+                          (currentTemplate.brandIconContent || '💥') === emoji
+                            ? 'bg-amber-500/30 border-amber-400 text-white shadow-md ring-1 ring-amber-400'
+                            : 'bg-slate-900 border-slate-800 hover:bg-slate-850 hover:border-slate-700 text-slate-300'
+                        }`}
+                        title={`اختيار رمز ${emoji}`}
+                      >
+                        {emoji}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 2. Position Selector Presets */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-bold text-slate-200">
+                      موضع ومكان تموضع الشعار (Position Preset):
+                    </label>
+                    <span className="text-[10px] text-amber-400 font-mono">
+                      {currentTemplate.brandIconPosition === 'top_left' ? 'أعلى اليسار' : currentTemplate.brandIconPosition === 'next_to_price' ? 'بجانب السعر' : currentTemplate.brandIconPosition === 'footer' ? 'أسفل الكرت' : 'أعلى اليمين'}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { id: 'top_right', label: 'أعلى اليمين', en: 'Top-Right Header', desc: 'في ترويسة الكرت جهة اليمين' },
+                      { id: 'top_left', label: 'أعلى اليسار', en: 'Top-Left Header', desc: 'في زاوية الترويسة جهة اليسار' },
+                      { id: 'next_to_price', label: 'بجانب السعر', en: 'Next to Price Tag', desc: 'ملاصق لشارة سعر الكرت' },
+                      { id: 'footer', label: 'أسفل الكرت', en: 'Card Footer', desc: 'في شريط التذييل السفلي' }
+                    ].map(pos => {
+                      const isSelected = (currentTemplate.brandIconPosition || 'top_right') === pos.id;
+                      return (
+                        <button
+                          key={pos.id}
+                          type="button"
+                          onClick={() => handleUpdateTemplate({ brandIconPosition: pos.id })}
+                          className={`p-2.5 rounded-xl border text-right transition flex flex-col justify-between ${
+                            isSelected
+                              ? 'bg-amber-500/20 border-amber-500 text-amber-200 shadow-md ring-1 ring-amber-500/40'
+                              : 'bg-slate-900 border-slate-800 text-slate-300 hover:bg-slate-850 hover:border-slate-700'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between w-full">
+                            <span className="text-xs font-bold">{pos.label}</span>
+                            {isSelected && <span className="text-amber-400 font-black text-xs">✓</span>}
+                          </div>
+                          <span className="text-[9.5px] text-slate-400 mt-1">{pos.desc}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* 3. Size & Opacity Controls */}
+                <div className="grid grid-cols-2 gap-3 pt-1">
+                  {/* Icon Size */}
+                  <div className="space-y-1.5 bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+                    <div className="flex items-center justify-between text-[11px]">
+                      <span className="text-slate-300 font-semibold">حجم الشعار:</span>
+                      <span className="font-mono text-amber-400 font-bold">
+                        {currentTemplate.brandIconSize || 16} px
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min={10}
+                      max={36}
+                      step={1}
+                      value={currentTemplate.brandIconSize || 16}
+                      onChange={e => handleUpdateTemplate({ brandIconSize: parseInt(e.target.value, 10) || 16 })}
+                      className="w-full accent-amber-500 h-1.5 bg-slate-800 rounded-lg cursor-pointer"
+                    />
+                    <div className="flex justify-between text-[9px] text-slate-400 font-mono">
+                      <span>10px (صغير)</span>
+                      <span>36px (كبير)</span>
+                    </div>
+                  </div>
+
+                  {/* Opacity / Visibility */}
+                  <div className="space-y-1.5 bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+                    <div className="flex items-center justify-between text-[11px]">
+                      <span className="text-slate-300 font-semibold">الشفافية والظهور:</span>
+                      <span className="font-mono text-sky-400 font-bold">
+                        {currentTemplate.brandIconOpacity ?? 100}%
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min={10}
+                      max={100}
+                      step={5}
+                      value={currentTemplate.brandIconOpacity ?? 100}
+                      onChange={e => handleUpdateTemplate({ brandIconOpacity: parseInt(e.target.value, 10) || 100 })}
+                      className="w-full accent-sky-500 h-1.5 bg-slate-800 rounded-lg cursor-pointer"
+                    />
+                    <div className="flex justify-between text-[9px] text-slate-400 font-mono">
+                      <span>10% (خافت)</span>
+                      <span>100% (واضح)</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Icons & Visual Symbols Master Toggle */}

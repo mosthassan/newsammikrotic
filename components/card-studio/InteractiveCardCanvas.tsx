@@ -34,7 +34,8 @@ export type EditableElementKey =
   | 'serial'
   | 'createdAt'
   | 'supportPhone'
-  | 'footerText';
+  | 'footerText'
+  | 'brandIcon';
 
 interface InteractiveCardCanvasProps {
   card: Card;
@@ -128,6 +129,20 @@ export const InteractiveCardCanvas: React.FC<InteractiveCardCanvasProps> = ({
         return { x: 55, y: 88, fontSize: Math.round(7.5 * autoScale), visible: template.showSupportPhone, align: 'right' };
       case 'footerText':
         return { x: 78, y: 88, fontSize: Math.round(7 * autoScale), visible: true, align: 'left' };
+      case 'brandIcon': {
+        const preset = template.brandIconPosition || 'top_right';
+        let defX = 5; let defY = 5;
+        if (preset === 'top_left') { defX = 85; defY = 5; }
+        else if (preset === 'next_to_price') { defX = 65; defY = 5; }
+        else if (preset === 'footer') { defX = 80; defY = 88; }
+        return {
+          x: defX,
+          y: defY,
+          fontSize: Math.round((template.brandIconSize || 16) * autoScale),
+          visible: template.brandIconEnabled,
+          align: 'center'
+        };
+      }
       default:
         return { x: 10, y: 10, fontSize: 10, visible: true, align: 'right' };
     }
@@ -694,6 +709,34 @@ export const InteractiveCardCanvas: React.FC<InteractiveCardCanvasProps> = ({
                 }`}
               >
                 {footerText}
+              </div>
+            );
+          })()}
+
+          {/* 13. Brand Icon / Signature System (💥) */}
+          {template.brandIconEnabled && (() => {
+            const p = getPos('brandIcon');
+            const isSelected = selectedElement === 'brandIcon';
+            const iconText = template.brandIconContent || '💥';
+            const iconSize = p.fontSize || template.brandIconSize || 16;
+            const opacity = (template.brandIconOpacity ?? 100) / 100;
+            return (
+              <div
+                onMouseDown={e => handleMouseDown(e, 'brandIcon')}
+                style={{
+                  position: 'absolute',
+                  right: `${p.x}%`,
+                  top: `${p.y}%`,
+                  fontSize: `${iconSize}px`,
+                  opacity,
+                  lineHeight: 1
+                }}
+                className={`cursor-move select-none px-1 py-0.5 rounded transition font-bold flex items-center justify-center ${
+                  isSelected ? 'ring-2 ring-amber-400 bg-amber-500/20 z-30 scale-110' : 'hover:ring-1 hover:ring-amber-400/40'
+                }`}
+                title="شعار الشبكة (💥)"
+              >
+                {iconText}
               </div>
             );
           })()}

@@ -133,6 +133,14 @@ export const CardPreview: React.FC<CardPreviewProps> = ({
         case 'byteLimit': return { x: 30, y: 88, fontSize: Math.round(8 * autoScale) };
         case 'supportPhone': return { x: 55, y: 88, fontSize: Math.round(7.5 * autoScale) };
         case 'footerText': return { x: 78, y: 88, fontSize: Math.round(7 * autoScale) };
+        case 'brandIcon': {
+          const preset = template.brandIconPosition || 'top_right';
+          let defX = 5; let defY = 5;
+          if (preset === 'top_left') { defX = 85; defY = 5; }
+          else if (preset === 'next_to_price') { defX = 65; defY = 5; }
+          else if (preset === 'footer') { defX = 80; defY = 88; }
+          return { x: defX, y: defY, fontSize: Math.round((template.brandIconSize || 16) * autoScale) };
+        }
         default: return { x: 10, y: 10, fontSize: 10 };
       }
     };
@@ -487,6 +495,32 @@ export const CardPreview: React.FC<CardPreviewProps> = ({
             </div>
           );
         })()}
+
+        {/* 13. Brand Icon / Signature System (💥) */}
+        {template.brandIconEnabled && (() => {
+          const p = getPos('brandIcon');
+          const iconText = template.brandIconContent || '💥';
+          const iconSize = (p.fontSize || template.brandIconSize || 16) * autoScale;
+          const opacity = (template.brandIconOpacity ?? 100) / 100;
+          return (
+            <div
+              style={{
+                position: 'absolute',
+                right: `${p.x}%`,
+                top: `${p.y}%`,
+                fontSize: `${iconSize}px`,
+                opacity,
+                lineHeight: 1,
+                pointerEvents: 'none',
+                zIndex: 20
+              }}
+              className="select-none flex items-center justify-center font-bold"
+              title="شعار الشبكة (💥)"
+            >
+              {iconText}
+            </div>
+          );
+        })()}
       </div>
     );
   }
@@ -536,6 +570,19 @@ export const CardPreview: React.FC<CardPreviewProps> = ({
             >
               {tenant?.businessName || 'شبكتي'}
             </span>
+            {template.brandIconEnabled && (
+              <span
+                style={{
+                  fontSize: `${Math.round((template.brandIconSize || 13) * autoScale)}px`,
+                  opacity: (template.brandIconOpacity ?? 100) / 100,
+                  lineHeight: 1
+                }}
+                className="shrink-0 select-none font-bold"
+                title="شعار الشبكة (💥)"
+              >
+                {template.brandIconContent || '💥'}
+              </span>
+            )}
             {template.showPrice && (
               <span
                 style={{
@@ -711,6 +758,19 @@ export const CardPreview: React.FC<CardPreviewProps> = ({
         }`}
       >
         <div className="flex items-center gap-1 min-w-0">
+          {template.brandIconEnabled && (template.brandIconPosition || 'top_right') === 'top_right' && (
+            <span
+              style={{
+                fontSize: `${Math.round((template.brandIconSize || 16) * autoScale)}px`,
+                opacity: (template.brandIconOpacity ?? 100) / 100,
+                lineHeight: 1
+              }}
+              className="shrink-0 select-none font-bold"
+              title="شعار الشبكة (💥)"
+            >
+              {template.brandIconContent || '💥'}
+            </span>
+          )}
           {template.showIcons !== false && (
             <div className="w-4 h-4 rounded-md bg-sky-500/20 flex items-center justify-center text-sky-400 shrink-0">
               <Wifi className="w-2.5 h-2.5" />
@@ -730,6 +790,19 @@ export const CardPreview: React.FC<CardPreviewProps> = ({
         </div>
 
         <div className="flex items-center gap-1">
+          {template.brandIconEnabled && template.brandIconPosition === 'top_left' && (
+            <span
+              style={{
+                fontSize: `${Math.round((template.brandIconSize || 16) * autoScale)}px`,
+                opacity: (template.brandIconOpacity ?? 100) / 100,
+                lineHeight: 1
+              }}
+              className="shrink-0 select-none font-bold"
+              title="شعار الشبكة (💥)"
+            >
+              {template.brandIconContent || '💥'}
+            </span>
+          )}
           {template.showCreatedAt && formattedDate && (
             <span 
               style={{ 
@@ -753,17 +826,45 @@ export const CardPreview: React.FC<CardPreviewProps> = ({
             </span>
           )}
           {template.showPrice && (
-            <div 
-              style={{ 
-                backgroundColor: priceStyle === 'minimal' ? 'transparent' : priceBg, 
-                color: priceTextColor,
-                fontSize: `${Math.round(9.5 * autoScale)}px`
-              }}
-              className={`font-black shrink-0 flex items-center gap-0.5 tracking-tight tabular-nums ${priceShapeClass}`}
-            >
-              <span>{card.price}</span>
-              <span className="text-[7px] font-normal">{tenant?.currency || 'ر.ي'}</span>
+            <div className="flex items-center gap-1">
+              {template.brandIconEnabled && template.brandIconPosition === 'next_to_price' && (
+                <span
+                  style={{
+                    fontSize: `${Math.round((template.brandIconSize || 16) * autoScale)}px`,
+                    opacity: (template.brandIconOpacity ?? 100) / 100,
+                    lineHeight: 1
+                  }}
+                  className="shrink-0 select-none font-bold"
+                  title="شعار الشبكة (💥)"
+                >
+                  {template.brandIconContent || '💥'}
+                </span>
+              )}
+              <div 
+                style={{ 
+                  backgroundColor: priceStyle === 'minimal' ? 'transparent' : priceBg, 
+                  color: priceTextColor,
+                  fontSize: `${Math.round(9.5 * autoScale)}px`
+                }}
+                className={`font-black shrink-0 flex items-center gap-0.5 tracking-tight tabular-nums ${priceShapeClass}`}
+              >
+                <span>{card.price}</span>
+                <span className="text-[7px] font-normal">{tenant?.currency || 'ر.ي'}</span>
+              </div>
             </div>
+          )}
+          {!template.showPrice && template.brandIconEnabled && template.brandIconPosition === 'next_to_price' && (
+            <span
+              style={{
+                fontSize: `${Math.round((template.brandIconSize || 16) * autoScale)}px`,
+                opacity: (template.brandIconOpacity ?? 100) / 100,
+                lineHeight: 1
+              }}
+              className="shrink-0 select-none font-bold"
+              title="شعار الشبكة (💥)"
+            >
+              {template.brandIconContent || '💥'}
+            </span>
           )}
         </div>
       </div>
@@ -898,6 +999,19 @@ export const CardPreview: React.FC<CardPreviewProps> = ({
         className="relative z-10 flex items-center justify-between border-t border-white/10 pt-0.5"
       >
         <div className="flex items-center gap-1.5 font-bold">
+          {template.brandIconEnabled && template.brandIconPosition === 'footer' && (
+            <span
+              style={{
+                fontSize: `${Math.round((template.brandIconSize || 14) * autoScale)}px`,
+                opacity: (template.brandIconOpacity ?? 100) / 100,
+                lineHeight: 1
+              }}
+              className="shrink-0 select-none font-bold ml-1"
+              title="شعار الشبكة (💥)"
+            >
+              {template.brandIconContent || '💥'}
+            </span>
+          )}
           {template.showUptime && (
             <div className="flex items-center gap-0.5">
               {template.showIcons !== false && <Clock className="w-2 h-2 text-sky-400" />}

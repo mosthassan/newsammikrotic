@@ -249,6 +249,26 @@ export async function exportCardDirectCanvas(
       const padding = Math.round(width * 0.05);
 
       // Header: Network Name (Right) + Price Tag (Left)
+      if (template.brandIconEnabled) {
+        ctx.font = `bold ${Math.round(width * 0.045)}px "Segoe UI Emoji", "Apple Color Emoji", sans-serif`;
+        ctx.globalAlpha = (template.brandIconOpacity ?? 100) / 100;
+        const icon = template.brandIconContent || '💥';
+        if (template.brandIconPosition === 'top_left') {
+          ctx.textAlign = 'left';
+          ctx.fillText(icon, padding, padding + Math.round(width * 0.04));
+        } else if (template.brandIconPosition === 'next_to_price') {
+          ctx.textAlign = 'left';
+          ctx.fillText(icon, padding + Math.round(width * 0.22), padding + Math.round(width * 0.04));
+        } else if (template.brandIconPosition === 'footer') {
+          ctx.textAlign = 'left';
+          ctx.fillText(icon, padding, height - padding);
+        } else {
+          ctx.textAlign = 'right';
+          ctx.fillText(icon, width - padding, padding + Math.round(width * 0.04));
+        }
+        ctx.globalAlpha = 1.0;
+      }
+
       if (template.showNetworkName) {
         ctx.fillStyle = template.networkNameColor || (isDark ? '#ffffff' : '#0f172a');
         ctx.font = `bold ${Math.round(width * 0.038)}px "Segoe UI", Tahoma, sans-serif`;

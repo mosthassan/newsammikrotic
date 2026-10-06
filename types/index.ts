@@ -304,6 +304,12 @@ export interface CardTemplate {
   metaIconsColor?: string;
   dateBadgeColor?: string;
   dateBadgeTextColor?: string;
+  // Brand Icon / Signature System (💥)
+  brandIconEnabled?: boolean;
+  brandIconContent?: string;
+  brandIconPosition?: 'top_right' | 'top_left' | 'next_to_price' | 'footer' | string;
+  brandIconSize?: number;
+  brandIconOpacity?: number;
   positions?: {
     networkName?: ElementPosition;
     profileName?: ElementPosition;
@@ -317,6 +323,7 @@ export interface CardTemplate {
     scratchFoil?: ElementPosition;
     supportPhone?: ElementPosition;
     footerText?: ElementPosition;
+    brandIcon?: ElementPosition;
   };
 }
 
