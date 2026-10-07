@@ -1,0 +1,46 @@
+{
+  "appId": "com.talqanet.manager",
+  "productName": "Talqa Net Manager",
+  "copyright": "Copyright © 2026 Talqa Net",
+  "directories": {
+    "output": "dist-electron",
+    "buildResources": "build-resources"
+  },
+  "extraMetadata": {
+    "main": "electron/main.js"
+  },
+  "files": [
+    "electron/**/*",
+    "public/**/*",
+    ".next/**/*",
+    "package.json"
+  ],
+  "win": {
+    "target": [
+      {
+        "target": "nsis",
+        "arch": ["x64"]
+      },
+      {
+        "target": "portable",
+        "arch": ["x64"]
+      }
+    ],
+    "icon": "public/favicon.ico"
+  },
+  "nsis": {
+    "oneClick": false,
+    "allowToChangeInstallationDirectory": true,
+    "createDesktopShortcut": true,
+    "createStartMenuShortcut": true,
+    "shortcutName": "Talqa Net Manager"
+  },
+  "mac": {
+    "category": "public.app-category.business",
+    "target": ["dmg", "zip"]
+  },
+  "linux": {
+    "target": ["AppImage", "deb"],
+    "category": "Network"
+  }
+}
