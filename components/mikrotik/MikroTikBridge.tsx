@@ -10,6 +10,7 @@ import {
   generateRouterOSCleanupScript
 } from '@/lib/store';
 import { copyTextToClipboard, downloadTextFile } from '@/lib/utils';
+import { saveMikrotikConfigToElectron, getMikrotikConfigFromElectron, isElectronEnvironment } from '@/lib/electron';
 import {
   Wifi,
   Terminal,
@@ -151,7 +152,7 @@ export const MikroTikBridge: React.FC<MikroTikBridgeProps> = ({
   };
 
   const handleSaveSettings = () => {
-    onUpdateTenantSettings({
+    const updatedSettings = {
       routerIp,
       loginDomain,
       apiHost,
@@ -163,8 +164,14 @@ export const MikroTikBridge: React.FC<MikroTikBridgeProps> = ({
       autoCleanupExpiredUsers: autoCleanup,
       cleanupRetentionPolicy: retentionPolicy,
       cleanupExcludeComments: excludeComments
-    });
-    alert('تم حفظ إعدادات التكامل مع راوتر المايكروتك بنجاح!');
+    };
+
+    onUpdateTenantSettings(updatedSettings);
+
+    // Sync settings directly with Electron main process if running in desktop shell
+    saveMikrotikConfigToElectron(updatedSettings);
+
+    alert('تم حفظ إعدادات التكامل مع راوتر المايكروتك ومزامنتها بنجاح!');
   };
 
   const handleSaveCleanupSettings = () => {

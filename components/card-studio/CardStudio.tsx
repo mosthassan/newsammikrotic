@@ -28,6 +28,8 @@ import {
   downloadRsc
 } from '@/lib/mikrotik-helpers';
 import { copyTextToClipboard } from '@/lib/utils';
+import { pushVouchersDirectly, isElectronEnvironment } from '@/lib/electron';
+import { PushProgress, PushVouchersResult } from '@/types/electron';
 import {
   FileDown,
   Printer,
@@ -758,6 +760,71 @@ export const CardStudio: React.FC<CardStudioProps> = ({
   const [isDownloadingZip, setIsDownloadingZip] = useState<boolean>(false);
   const [downloadedPartIndex, setDownloadedPartIndex] = useState<number | null>(null);
 
+  // Direct Push to MikroTik Router via Electron Native IPC Bridge
+  const [isDirectPushing, setIsDirectPushing] = useState<boolean>(false);
+  const [directPushProgress, setDirectPushProgress] = useState<PushProgress | null>(null);
+  const [directPushResult, setDirectPushResult] = useState<PushVouchersResult | null>(null);
+  const [directPushError, setDirectPushError] = useState<string | null>(null);
+
+  // Native Direct Push to MikroTik Router (Electron IPC Bridge with chunked batches & /ip/hotspot/user/print verification)
+  const handleDirectPushToRouter = async () => {
+    if (!savedBatchData || isDirectPushing) return;
+    setIsDirectPushing(true);
+    setDirectPushError(null);
+
+    const rawBatchNum = savedBatchData.batch.batchNumber || savedBatchData.batch.id || "101";
+    let cleanBatchStr = String(rawBatchNum).replace(/^NetFlow[-_]?/i, "").trim();
+    if (cleanBatchStr.toLowerCase().startsWith("b-")) {
+      cleanBatchStr = cleanBatchStr.substring(2);
+    } else if (cleanBatchStr.toLowerCase().startsWith("b")) {
+      cleanBatchStr = cleanBatchStr.substring(1);
+    }
+    const batchComment = sanitizeRouterOSComment(`NetFlow-B-${cleanBatchStr || "101"}`);
+    const formattedBytes = formatByteLimit(selectedProfile?.byteLimit || savedBatchData.cards[0]?.byteDisplay) || "2700M";
+
+    const cardsPayload = savedBatchData.cards.map(c => ({
+      code: c.code,
+      name: c.code,
+      password: c.password || c.code,
+      profile: 'default',
+      limitBytesTotal: formattedBytes,
+      limitUptime: selectedProfile?.uptimeLimit || '',
+      comment: batchComment
+    }));
+
+    const routerConfig = {
+      host: tenant.settings?.apiHost || tenant.settings?.routerIp || 'router.samtecai.com',
+      port: tenant.settings?.apiPort || 443,
+      username: tenant.settings?.apiUser || 'mosthassan',
+      password: tenant.settings?.apiPassword || '',
+      useHttps: tenant.settings?.apiPort === 443 || tenant.settings?.useHttps !== false,
+      timeoutMs: 8000
+    };
+
+    try {
+      const res = await pushVouchersDirectly(
+        {
+          cards: cardsPayload,
+          batchComment,
+          batchNumber: savedBatchData.batch.batchNumber,
+          routerConfig
+        },
+        (progress) => {
+          setDirectPushProgress(progress);
+        }
+      );
+
+      setDirectPushResult(res);
+      if (!res.success && res.failed === res.total) {
+        setDirectPushError(res.message || 'تعذر الاتصال بالراوتر للحقن المباشر');
+      }
+    } catch (err: any) {
+      setDirectPushError(err.message || 'حدث خطأ أثناء الاتصال بالراوتر');
+    } finally {
+      setIsDirectPushing(false);
+    }
+  };
+
   const savedBatchSplitPackage = useMemo(() => {
     if (!savedBatchData?.cards || savedBatchData.cards.length === 0) return null;
     return generateSplitRouterOSScripts(
@@ -837,6 +904,10 @@ export const CardStudio: React.FC<CardStudioProps> = ({
         price: selectedProfile?.price || 0,
         totalValue: (previewBatchData.cards.length) * (selectedProfile?.price || 0)
       });
+      // Reset Direct Push state for this newly generated batch
+      setDirectPushProgress(null);
+      setDirectPushResult(null);
+      setDirectPushError(null);
       setIsSavedBatchModalOpen(true);
 
       setSuccessMessage(`تم إنشاء وحفظ الدفعة (${batchToSave.batchNumber}) بعدد ${previewBatchData.cards.length} كرت بنجاح في المخزن.`);
@@ -1653,6 +1724,145 @@ export const CardStudio: React.FC<CardStudioProps> = ({
                     تم توليد عدد <strong>{savedBatchData.quantity}</strong> كرت دون أي نقص، بأكواد مشفرة فريدة لا تتكرر ولا تتداخل مع أي دفعة أو فئة سابقة، مع ربطها المباشر بحصص وسرعة باقة <strong>{savedBatchData.profileName}</strong>.
                   </p>
                 </div>
+              </div>
+
+              {/* Primary Action: Direct Push to MikroTik Router via Electron Native IPC Bridge */}
+              <div className="bg-gradient-to-r from-sky-950/80 via-slate-900 to-indigo-950/80 border-2 border-sky-500/40 rounded-2xl p-4.5 space-y-3.5 shadow-xl shadow-sky-950/30">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-10 h-10 rounded-xl bg-sky-500/20 text-sky-400 border border-sky-500/40 flex items-center justify-center shrink-0">
+                      <Zap className="w-5 h-5 text-sky-400" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h4 className="text-sm font-bold text-white">
+                          دفع آلي إلى المايكروتك (Direct Push)
+                        </h4>
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-sky-900/60 text-sky-300 border border-sky-600/40 font-bold">
+                          REST API v7
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-300 mt-0.5">
+                        رفع الكروت مباشرة إلى الراوتر بدفعات آمنة (100 كرت/دفعة) مع التحقق الفوري من التسجيل 100%
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 text-[11px] text-slate-300 font-mono bg-slate-950/70 px-2.5 py-1.5 rounded-lg border border-slate-800 shrink-0 self-start sm:self-auto">
+                    <Server className="w-3.5 h-3.5 text-sky-400" />
+                    <span>{tenant.settings?.apiHost || tenant.settings?.routerIp || 'router.samtecai.com'}:{tenant.settings?.apiPort || 443}</span>
+                  </div>
+                </div>
+
+                {/* Live Progress Bar Section */}
+                {directPushProgress && (
+                  <div className="space-y-2.5 bg-slate-950/90 border border-slate-800 rounded-xl p-3.5">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-bold text-slate-200 flex items-center gap-2">
+                        {directPushProgress.status === 'uploading' && <RefreshCw className="w-3.5 h-3.5 text-sky-400 animate-spin" />}
+                        {directPushProgress.status === 'verifying' && <ShieldCheck className="w-3.5 h-3.5 text-amber-400 animate-pulse" />}
+                        {directPushProgress.status === 'completed' && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />}
+                        {directPushProgress.status === 'failed' && <AlertCircle className="w-3.5 h-3.5 text-rose-400" />}
+                        <span>{directPushProgress.message}</span>
+                      </span>
+                      <span className="font-mono font-bold text-sky-400 text-sm">
+                        {directPushProgress.percentage}%
+                      </span>
+                    </div>
+
+                    {/* Live Progress Track */}
+                    <div className="w-full h-3 bg-slate-900 rounded-full overflow-hidden border border-slate-800 relative">
+                      <div
+                        className={`h-full transition-all duration-300 rounded-full ${
+                          directPushProgress.status === 'completed'
+                            ? 'bg-gradient-to-r from-emerald-500 to-teal-400'
+                            : directPushProgress.status === 'failed'
+                            ? 'bg-gradient-to-r from-rose-600 to-amber-600'
+                            : 'bg-gradient-to-r from-sky-500 via-indigo-500 to-emerald-400'
+                        }`}
+                        style={{ width: `${directPushProgress.percentage}%` }}
+                      />
+                    </div>
+
+                    {/* Real-time Sub-metrics */}
+                    <div className="flex items-center justify-between text-[11px] text-slate-400 font-mono">
+                      <span>الكرت: {directPushProgress.current} / {directPushProgress.total}</span>
+                      <div className="flex items-center gap-3">
+                        {directPushProgress.added !== undefined && directPushProgress.added > 0 && (
+                          <span className="text-emerald-400">مضاف: {directPushProgress.added}</span>
+                        )}
+                        {directPushProgress.exists !== undefined && directPushProgress.exists > 0 && (
+                          <span className="text-amber-400">مسبقاً: {directPushProgress.exists}</span>
+                        )}
+                        {directPushProgress.failed !== undefined && directPushProgress.failed > 0 && (
+                          <span className="text-rose-400">تعثر: {directPushProgress.failed}</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Post-Upload Verification Badge */}
+                {directPushResult?.verified && (
+                  <div className="bg-emerald-950/60 border border-emerald-500/50 rounded-xl p-3 flex items-start gap-2.5 text-xs">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                    <div className="text-emerald-300 space-y-0.5">
+                      <span className="font-bold block">
+                        تم التحقق 100% عبر استعلام الراوتر (/ip/hotspot/user/print):
+                      </span>
+                      <p className="text-emerald-200/90 leading-relaxed font-mono">
+                        تم التأكد من تسجيل جميع الكروت بالتمام ({directPushResult.verifiedCount} كرت) في سيرفر الهوتسبوت بدون أي نقص، وجاهزة لتسجيل دخول المشتركين فوراً!
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Error Message Alert */}
+                {directPushError && (
+                  <div className="bg-rose-950/50 border border-rose-500/40 rounded-xl p-3 flex items-start gap-2 text-xs text-rose-300">
+                    <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                    <div className="flex-1 space-y-0.5">
+                      <span className="font-bold block">تنبيه أثناء الاتصال بالراوتر:</span>
+                      <p className="text-rose-200/90 leading-relaxed">{directPushError}</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Primary Action Button */}
+                <button
+                  type="button"
+                  id="direct-push-router-btn"
+                  disabled={isDirectPushing}
+                  onClick={handleDirectPushToRouter}
+                  className={`w-full py-3.5 px-4 rounded-xl font-bold text-sm shadow-lg transition transform active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2 ${
+                    isDirectPushing
+                      ? 'bg-slate-800 text-slate-400 cursor-not-allowed border border-slate-700'
+                      : directPushResult?.success
+                      ? 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-emerald-900/40'
+                      : 'bg-gradient-to-r from-sky-600 via-indigo-600 to-emerald-600 hover:from-sky-500 hover:via-indigo-500 hover:to-emerald-500 text-white shadow-sky-900/40'
+                  }`}
+                >
+                  {isDirectPushing ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 animate-spin text-sky-400" />
+                      <span>
+                        {directPushProgress
+                          ? `جاري الرفع: ${directPushProgress.current} / ${directPushProgress.total}...`
+                          : 'جاري الاتصال بالراوتر...'}
+                      </span>
+                    </>
+                  ) : directPushResult?.success ? (
+                    <>
+                      <CheckCircle2 className="w-4 h-4 text-emerald-300" />
+                      <span>إعادة الدفع الآلي إلى المايكروتك (تم بنجاح ✓)</span>
+                    </>
+                  ) : (
+                    <>
+                      <Zap className="w-4 h-4 text-amber-300" />
+                      <span>دفع آلي إلى المايكروتك (Direct Push) - {savedBatchData.quantity} كرت</span>
+                    </>
+                  )}
+                </button>
               </div>
 
               {/* MikroTik Script & RSC Injection Section */}

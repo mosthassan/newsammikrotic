@@ -34,4 +34,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.on('window-maximize-changed', subscription);
     return () => ipcRenderer.removeListener('window-maximize-changed', subscription);
   },
+
+  // MikroTik Direct Push & Settings Sync
+  pushVouchersToRouter: (payload) => ipcRenderer.invoke('push-vouchers-to-router', payload),
+  onPushProgress: (callback) => {
+    const subscription = (_event, progress) => callback(progress);
+    ipcRenderer.on('mikrotik-push-progress', subscription);
+    return () => ipcRenderer.removeListener('mikrotik-push-progress', subscription);
+  },
+  saveMikrotikSettings: (settings) => ipcRenderer.invoke('save-mikrotik-settings', settings),
+  getMikrotikSettings: () => ipcRenderer.invoke('get-mikrotik-settings'),
 });

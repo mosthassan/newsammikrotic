@@ -2,12 +2,14 @@
   "name": "ai-studio-applet",
   "version": "0.1.0",
   "private": true,
+  "main": "electron/main.js",
   "scripts": {
     "dev": "next dev -p 3000",
     "build": "next build",
     "start": "next start -p 3000",
     "lint": "eslint .",
-    "electron:dev": "concurrently -k -p \"[{name}]\" -n \"NEXT,ELECTRON\" -c \"cyan,magenta\" \"next dev -p 3000\" \"cross-env NODE_ENV=development electron .\"",
+    "electron": "electron .",
+    "electron:dev": "concurrently -k -p \"[{name}]\" -n \"NEXT,ELECTRON\" -c \"cyan,magenta\" \"next dev -p 3000\" \"cross-env NODE_ENV=development electron electron/main.js\"",
     "electron:build": "next build && electron-builder",
     "electron:pack": "electron-builder --dir"
   },

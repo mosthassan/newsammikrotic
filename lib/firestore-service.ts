@@ -20,6 +20,8 @@ import {
   signInAnonymously, 
   onAuthStateChanged, 
   signInWithPopup, 
+  signInWithRedirect,
+  getRedirectResult,
   GoogleAuthProvider, 
   signOut,
   User 
@@ -80,6 +82,19 @@ export async function ensureAuth(): Promise<User | null> {
           unsubscribe();
           resolve(user);
         } else {
+          // Check if user is returning from a Google redirect sign-in
+          try {
+            const redirectResult = await getRedirectResult(auth);
+            if (redirectResult && redirectResult.user) {
+              clearTimeout(timer);
+              unsubscribe();
+              resolve(redirectResult.user);
+              return;
+            }
+          } catch (rErr) {
+            // Not a redirect or redirect error, proceed with anonymous
+          }
+
           try {
             const userCred = await signInAnonymously(auth);
             clearTimeout(timer);
@@ -104,7 +119,23 @@ export async function signInWithGoogle(): Promise<{ success: boolean; profile?: 
   try {
     const provider = new GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' });
-    const result = await signInWithPopup(auth, provider);
+    
+    let result;
+    try {
+      result = await signInWithPopup(auth, provider);
+    } catch (popupError: any) {
+      const code = popupError?.code || '';
+      console.warn('Google signIn popup exception:', code, popupError);
+
+      // Handle popup blocked (fallback to signInWithRedirect in Electron/restricted environments)
+      if (code === 'auth/popup-blocked' || popupError?.message?.includes('popup-blocked')) {
+        console.log('Firebase popup blocked, initiating redirect flow fallback...');
+        await signInWithRedirect(auth, provider);
+        return { success: true };
+      }
+      throw popupError;
+    }
+
     const user = result.user;
 
     const email = user.email || '';
